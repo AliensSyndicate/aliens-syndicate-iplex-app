@@ -1,0 +1,121 @@
+.launcher {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Tela do shell (carregamento/erro), acima do iframe enquanto ele carrega. */
+.launcher-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  background: inherit;
+  background-image: linear-gradient(180deg, var(--iplex-bg-top), var(--iplex-bg-mid) 45%, var(--iplex-bg-bottom));
+}
+
+/* iPlex Web em tela cheia. Transparente para deixar ver o plano de vídeo. */
+.shell-frame {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  visibility: hidden;
+}
+
+.shell-frame.is-visible {
+  visibility: visible;
+}
+
+.launcher-offline {
+  position: fixed;
+  top: 4vh;
+  left: 50%;
+  z-index: 3;
+  padding: 1vw 2vw;
+  border-radius: 0.8vw;
+  background: rgba(186, 71, 63, 0.92);
+  color: #fff;
+  font-size: 1.3vw;
+  transform: translateX(-50%);
+}
+
+.launcher-brand {
+  position: absolute;
+  top: 5vh;
+  left: 5vw;
+  display: flex;
+  align-items: baseline;
+}
+
+.launcher-brand .iplex-wordmark {
+  font-size: 2.8vw;
+}
+
+.launcher-brand-suffix {
+  margin-left: 0.6vw;
+  color: var(--iplex-text-secondary);
+  font-size: 1.4vw;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+
+.launcher-status {
+  max-width: 64vw;
+}
+
+.launcher-title {
+  margin: 0;
+  font-size: 2.8vw;
+  font-weight: 700;
+}
+
+.launcher-message {
+  margin: 1.2vw 0 0;
+  color: var(--iplex-text-secondary);
+  font-size: 1.5vw;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.launcher[data-phase='failed'] .launcher-title {
+  color: #e8a19b;
+}
+
+.launcher-spinner {
+  width: 4vw;
+  height: 4vw;
+  margin: 0 auto 2.4vw;
+  border: 0.35vw solid rgba(229, 227, 229, 0.15);
+  border-top-color: var(--iplex-text);
+  border-radius: 50%;
+  animation: launcher-spin 0.9s linear infinite;
+}
+
+@keyframes launcher-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.launcher-details {
+  position: absolute;
+  bottom: 5vh;
+  left: 5vw;
+  right: 5vw;
+  display: flex;
+  justify-content: space-between;
+  color: var(--iplex-text-disabled);
+  font-size: 1vw;
+}

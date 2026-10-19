@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Modelo do config.xml do iPlex TV (Samsung Tizen, perfil tv-samsung).
+  Gerado em dist-tizen/widget/config.xml por scripts/build-tizen.mjs.
+  Os marcadores {{...}} são preenchidos a partir do .env.
+-->
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="http://alienssyndicate/IplexTV" version="{{VERSION}}" viewmodes="maximized">
+    <tizen:application id="{{PACKAGE_ID}}.IplexTV" package="{{PACKAGE_ID}}" required_version="4.0"/>
+    <tizen:profile name="tv-samsung"/>
+    <name>iPlex TV</name>
+    <icon src="icon.png"/>
+    <content src="launcher.html"/>
+
+    <!-- Único privilégio necessário: acesso à internet. Teclas obrigatórias
+         (setas, Enter, Return) não exigem tv.inputdevice. -->
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+
+    <!-- Política de acesso a recursos externos (W3C WARP) e de navegação de
+         nível superior, derivadas de VITE_IPLEX_TARGET_URL + IPLEX_TIZEN_EXTRA_HOSTS. -->
+{{ACCESS}}
+{{ALLOW_NAVIGATION}}
+
+    <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="disable" encryption="disable" install-location="auto"/>
+</widget>

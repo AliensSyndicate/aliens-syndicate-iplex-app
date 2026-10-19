@@ -1,0 +1,110 @@
+.online {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 6vw;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.online-wordmark {
+  font-size: 3.6vw;
+  color: var(--iplex-text-secondary);
+}
+
+.online-title {
+  margin: 1.6vw 0 2.4vw;
+  color: var(--iplex-success);
+  font-size: 5vw;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.online-facts {
+  width: 100%;
+  max-width: 76vw;
+  margin: 0;
+  padding: 1.4vw 2vw;
+  border-radius: 1vw;
+  background: rgba(0, 0, 0, 0.22);
+  text-align: left;
+}
+
+.online-fact {
+  display: flex;
+  padding: 0.45vw 0;
+  font-size: 1.15vw;
+}
+
+.online-fact dt {
+  flex: 0 0 14vw;
+  color: var(--iplex-text-disabled);
+}
+
+.online-fact dd {
+  flex: 1 1 auto;
+  margin: 0;
+  color: var(--iplex-text);
+  word-break: break-all;
+}
+
+.online-keys {
+  margin-top: 2.4vw;
+}
+
+.online-keys h2 {
+  margin: 0 0 0.6vw;
+  font-size: 1.5vw;
+}
+
+.online-keys p {
+  margin: 0;
+  color: var(--iplex-text-secondary);
+  font-size: 1.3vw;
+}
+
+.online-subtitle {
+  margin: -1.6vw 0 1.6vw;
+  color: var(--iplex-text-disabled);
+  font-size: 1.1vw;
+}
+
+.online-steps {
+  width: 100%;
+  max-width: 76vw;
+  margin: 1.4vw 0 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.online-step {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.45vw 1vw;
+  font-size: 1.1vw;
+  border-left: 0.3vw solid var(--iplex-text-disabled);
+  margin-bottom: 0.3vw;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.online-step.is-ok {
+  border-left-color: var(--iplex-success);
+}
+
+.online-step.is-error {
+  border-left-color: var(--iplex-error);
+  color: #e8a19b;
+}
+
+.online-step.is-running {
+  border-left-color: var(--iplex-focus);
+}
+
+/* Durante a reprodução, a página fica transparente para o plano de vídeo. */
+html.iplex-media-active .online-facts,
+html.iplex-media-active .online-steps {
+  background: rgba(0, 0, 0, 0.45);
+}
