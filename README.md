@@ -1,78 +1,75 @@
-# React + TypeScript + Vite
+# aliens-syndicate-iplex-app
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicativo **iPlex** para as lojas de Smart TVs. Hoje cobre a **Samsung
+Tizen**; o **LG webOS** fica para o futuro. É feito em React, TypeScript e
+Vite.
 
-Currently, two official plugins are available:
+O app é um *shell* instalado na TV. Ele carrega o **iPlex Web** hospedado e
+dá a ele acesso aos recursos da TV por uma ponte segura: player AVPlay,
+controle remoto e informações da plataforma.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Repositório | Papel |
+|---|---|
+| **aliens-syndicate-iplex-app** (este) | app instalável nas Smart TVs |
+| iPlex Web (outro repositório) | interface principal, em `https://alienssyndicate.com/apps/iplex/` |
+| iPlex Gestor (outro repositório) | gestão |
 
-## React Compiler
+## Testar na Samsung com um clique
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm run tv
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Também dá para dar **duplo clique em `iPlex-TV.command`** no Finder. O fluxo
+é o mesmo:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Conecta à TV via Wi-Fi (SDB).
+2. Faz o build e gera o `.wgt` assinado.
+3. Instala ou atualiza o app, só quando o conteúdo mudou.
+4. Abre o iPlex.
+5. Valida a execução real na TV.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Comando | O que faz |
+|---|---|
+| `npm run tv` | ambiente de desenvolvimento (página de teste servida pelo Mac) |
+| `npm run tv -- --env production` | destino de produção; só prossegue se o iPlex Web estiver publicado |
+| `npm run tv -- --watch 60` | mostra no terminal as teclas do controle remoto por 60 s |
+| `npm run tv -- --host <IP>` | usa outra TV (ou defina `IPLEX_TV_HOST` no `.env.local`) |
+| `npm run tv -- --force-install` | reinstala mesmo sem mudanças |
 
-```
+O IP da TV fica em `.env` (`IPLEX_TV_HOST=192.168.15.8`). Os logs de cada
+execução ficam em `build/logs/`.
+
+Pré-requisitos no Mac:
+- Tizen Studio CLI em `~/tizen-studio`;
+- Rosetta 2 (o `sdb` é x86_64);
+- perfil de assinatura `iplex-dev`;
+- TV em Modo Desenvolvedor com o IP deste Mac.
+
+## Outros comandos
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | shell + página de teste no navegador (`/launcher.html`) |
+| `npm run typecheck` / `npm run lint` | TypeScript / ESLint |
+| `npm run build` | build web (sanidade) |
+| `npm run build:tizen` | widget Tizen de produção em `dist-tizen/widget` |
+| `npm run package:tizen` | widget + `.wgt` assinado em `build/tizen/` |
+
+Para os dois últimos, acrescente `-- --env development` para usar o
+ambiente de desenvolvimento.
+
+## Configuração por ambiente
+
+| Arquivo | Conteúdo |
+|---|---|
+| `.env.production` | URL de produção do iPlex Web: `https://alienssyndicate.com/apps/iplex/` |
+| `.env.development` | página de teste controlada (independente da produção) |
+| `.env` | valores comuns (tempos limite, Tizen, TV de desenvolvimento) |
+
+## Documentação
+
+- [docs/TIZEN.md](docs/TIZEN.md): arquitetura, ponte, AVPlay, restrições
+  da Samsung e automação da TV.
+- [docs/IPLEX-WEB.md](docs/IPLEX-WEB.md): requisitos para o iPlex Web
+  funcionar em `/apps/iplex/`.

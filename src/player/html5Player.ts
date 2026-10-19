@@ -119,7 +119,10 @@ export function createHtml5Player(): MediaPlayer {
 
     play() {
       if (!url) throw new PlayerError('NO_MEDIA', 'Nenhuma mídia aberta')
+      if (state === 'loading') throw new PlayerError('NOT_READY', 'play: a mídia ainda está carregando')
       video.play().catch((error: unknown) => emit({ type: 'error', error: { code: 'PLAY_REJECTED', message: String(error) } }))
+      // Como no AVPlay, o estado reflete o comando aceito; 'playing'/'error' confirmam depois.
+      setState('playing')
       return status()
     },
 

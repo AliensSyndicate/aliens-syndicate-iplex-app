@@ -34,6 +34,12 @@ interface Pending {
   timer: number
 }
 
+/** Tempos limite por método: abrir mídia inclui o prepare do player e a rede. */
+const METHOD_TIMEOUTS: Partial<Record<BridgeMethod, number>> = {
+  'player.open': 45000,
+  'player.seek': 20000,
+}
+
 export function isInsideShell(): boolean {
   return window.parent !== window
 }
@@ -70,10 +76,11 @@ export function createBridgeClient({ timeoutMs = 10000 }: { timeoutMs?: number }
         }
         sequence += 1
         const id = `${Date.now().toString(36)}-${sequence}`
+        const limit = METHOD_TIMEOUTS[method] ?? timeoutMs
         const timer = window.setTimeout(() => {
           pending.delete(id)
-          reject(new BridgeCallError('timeout', `Sem resposta para ${method}`))
-        }, timeoutMs)
+          reject(new BridgeCallError('timeout', `Sem resposta para ${method} em ${limit / 1000} s`))
+        }, limit)
         pending.set(id, { resolve: resolve as (value: unknown) => void, reject, timer })
         const request: BridgeRequestMessage<M> = {
           protocol: BRIDGE_PROTOCOL,

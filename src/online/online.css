@@ -99,6 +99,11 @@
   color: #e8a19b;
 }
 
+.online-step.is-warn {
+  border-left-color: #ccba96;
+  color: #ccba96;
+}
+
 .online-step.is-running {
   border-left-color: var(--iplex-focus);
 }

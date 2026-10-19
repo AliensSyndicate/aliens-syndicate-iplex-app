@@ -9,6 +9,7 @@ import { PlayerError, type MediaPlayer, type OpenOptions, type PlayerEvent } fro
  */
 
 const TIME_EVENT_INTERVAL_MS = 1000
+const OPEN_TIMEOUT_MS = 40000
 // setDisplayRect usa sempre a grade 1920x1080, independentemente do viewport.
 const SCREEN = { width: 1920, height: 1080 }
 
@@ -53,6 +54,10 @@ export function createAvplayPlayer(avplay: AVPlayManager): MediaPlayer {
   let positionMs = 0
   let durationMs = 0
   let lastTimeEvent = 0
+  /** Cada open() recebe um número; callbacks de um open substituído são ignorados. */
+  let openSequence = 0
+  /** Encerra o open anterior quando outro começa (o AVPlay não chama mais os callbacks dele). */
+  let cancelPendingOpen: (() => void) | null = null
 
   const status = (): PlayerStatus => ({ state, positionMs, durationMs, url })
   const emit = (event: PlayerEvent) => listeners.forEach((listener) => listener(event))
@@ -82,6 +87,12 @@ export function createAvplayPlayer(avplay: AVPlayManager): MediaPlayer {
     } catch {
       // Sem instância aberta.
     }
+  }
+
+  /** Comandos de reprodução só valem com mídia preparada (READY/PLAYING/PAUSED/fim). */
+  const ensureLoaded = (command: string) => {
+    if (state === 'loading') throw new PlayerError('NOT_READY', `${command}: a mídia ainda está carregando`)
+    if (state === 'idle' || !url) throw new PlayerError('NO_MEDIA', `${command}: nenhuma mídia aberta`)
   }
 
   const listener: AVPlayPlaybackCallback = {
@@ -117,12 +128,34 @@ export function createAvplayPlayer(avplay: AVPlayManager): MediaPlayer {
     native: true,
 
     open(mediaUrl: string, options: OpenOptions = {}) {
+      cancelPendingOpen?.()
       reset()
+      const sequence = ++openSequence
       url = mediaUrl
       positionMs = 0
       durationMs = 0
       setState('loading')
-      return new Promise<PlayerStatus>((resolve, reject) => {
+      return new Promise<PlayerStatus>((promiseResolve, promiseReject) => {
+        const current = () => sequence === openSequence
+        const timer = window.setTimeout(() => {
+          if (!current()) return
+          reset()
+          setState('error')
+          promiseReject(new PlayerError('TIMEOUT', `AVPlay não preparou a mídia em ${OPEN_TIMEOUT_MS / 1000} s`))
+        }, OPEN_TIMEOUT_MS)
+        // Um open substituído por outro termina sem alterar o estado atual.
+        const resolve = (value: PlayerStatus) => {
+          window.clearTimeout(timer)
+          if (current()) cancelPendingOpen = null
+          if (current()) promiseResolve(value)
+          else promiseReject(new PlayerError('SUPERSEDED', 'Substituído por outra mídia'))
+        }
+        const reject = (error: PlayerError) => {
+          window.clearTimeout(timer)
+          if (current()) cancelPendingOpen = null
+          promiseReject(error)
+        }
+        cancelPendingOpen = () => reject(new PlayerError('SUPERSEDED', 'Substituído por outra mídia'))
         try {
           avplay.open(mediaUrl)
           avplay.setListener(listener)
@@ -135,6 +168,7 @@ export function createAvplayPlayer(avplay: AVPlayManager): MediaPlayer {
         }
         avplay.prepareAsync(
           () => {
+            if (!current()) return resolve(status())
             try {
               durationMs = avplay.getDuration()
             } catch {
@@ -160,6 +194,7 @@ export function createAvplayPlayer(avplay: AVPlayManager): MediaPlayer {
             }
           },
           (error) => {
+            if (!current()) return reject(new PlayerError('SUPERSEDED', 'Substituído por outra mídia'))
             setState('error')
             reject(avplayError(error))
           },
@@ -168,12 +203,14 @@ export function createAvplayPlayer(avplay: AVPlayManager): MediaPlayer {
     },
 
     play() {
+      ensureLoaded('play')
       call(() => avplay.play())
       setState('playing')
       return status()
     },
 
     pause() {
+      ensureLoaded('pause')
       call(() => avplay.pause())
       setState('paused')
       return status()
@@ -190,6 +227,7 @@ export function createAvplayPlayer(avplay: AVPlayManager): MediaPlayer {
     seek(target: number) {
       return new Promise<PlayerStatus>((resolve, reject) => {
         try {
+          ensureLoaded('seek')
           avplay.seekTo(
             target,
             () => {
@@ -229,6 +267,12 @@ export function createAvplayPlayer(avplay: AVPlayManager): MediaPlayer {
     },
 
     selectTrack(kind: TrackKind, index: number) {
+      const current = this.getTracks()
+      if (!current.some((track) => track.kind === kind && track.index === index)) {
+        throw new PlayerError('NO_TRACK', `Faixa ${kind} ${index} inexistente`)
+      }
+      // Faixa já ativa: o AVPlay responde INVALID_PARAMETER; trata como no-op.
+      if (current.some((track) => track.kind === kind && track.index === index && track.selected)) return current
       call(() => avplay.setSelectTrack(kind === 'audio' ? 'AUDIO' : 'TEXT', index))
       return this.getTracks()
     },

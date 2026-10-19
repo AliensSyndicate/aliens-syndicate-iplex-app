@@ -11,8 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_IPLEX_LOAD_TIMEOUT_MS?: string
   /** Somente desenvolvimento: permite destino http (página servida pelo Mac). */
   readonly VITE_IPLEX_ALLOW_INSECURE_TARGET?: string
-  /** Somente página de teste: mídia usada no teste do player. */
-  readonly VITE_IPLEX_TEST_MEDIA_URL?: string
+  /** Somente página de teste: "canais" (URLs de mídia) separados por espaço. */
+  readonly VITE_IPLEX_TEST_CHANNELS?: string
   /** Somente `npm run tv`: receptor de eventos no Mac. */
   readonly VITE_IPLEX_DEV_REPORT_URL?: string
 }

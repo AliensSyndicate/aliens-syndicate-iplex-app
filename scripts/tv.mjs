@@ -447,6 +447,12 @@ async function main() {
       device = sdbDevices().find((entry) => entry.serial === serial)
       if (device?.state === 'device') break
       warn(`conexão não estabelecida (tentativa ${attempt}/${cfg.attempts}): ${result.output.trim().split('\n').pop()}`)
+      if (attempt === 1) {
+        // Sessão antiga do servidor SDB local pode bloquear a TV: reinicia só o servidor do Mac.
+        info('reiniciando o servidor SDB deste Mac')
+        run(cfg.sdb, ['kill-server'], { timeoutMs: 20000 })
+        run(cfg.sdb, ['start-server'], { timeoutMs: 30000 })
+      }
       if (attempt < cfg.attempts) await sleep(cfg.retryDelayMs)
     }
     if (!device) {
@@ -600,7 +606,7 @@ async function main() {
 
   // 13 ----------------------------------------------------------------------
   step('Validação real na TV')
-  const FAILURES = ['offline', 'unreachable', 'not-deployed', 'server-error', 'incompatible', 'load-timeout', 'config-error', 'test:error']
+  const FAILURES = ['offline', 'unreachable', 'not-deployed', 'server-error', 'incompatible', 'load-timeout', 'config-error', 'test:failed']
   const outcome = await new Promise((resolveOutcome) => {
     const timer = setTimeout(() => resolveOutcome({ status: 'timeout', started, ready }), cfg.validateTimeoutMs)
     let started = null
@@ -643,17 +649,42 @@ async function main() {
     info('modo navigate: a página remota não tem ponte nem envia relatórios.')
   } else {
     ok(`frontend pronto na TV (app.ready: ${outcome.ready.detail})`)
-    if (expectTestPage) ok('página de teste: ponte e player verificados na TV (detalhes acima)')
+  }
+
+  const testEvents = devServer.events.filter((event) => event.receivedAt >= launchedAt && /^test:/.test(event.event))
+  const testErrors = testEvents.filter((event) => event.event === 'test:error')
+  const testWarnings = testEvents.filter((event) => event.event === 'test:warn')
+  if (expectTestPage) {
+    const passed = testEvents.filter((event) => /^ok\b/.test(event.detail ?? '')).length
+    print(`\n  ${color.bold}Resultado na TV:${color.off} ${passed} teste(s) ok, ${testErrors.length} com falha, ${testWarnings.length} limitação(ões) do aparelho/stream`)
+    for (const event of testErrors) print(`  ${color.err}✖${color.off} ${event.detail}`)
+    for (const event of testWarnings) print(`  ${color.warn}⚠${color.off} ${event.detail}`)
   }
 
   if (cfg.watchSeconds) {
-    info(`acompanhando eventos da TV por ${cfg.watchSeconds}s (teclas do controle remoto aparecem aqui)…`)
-    await sleep(cfg.watchSeconds * 1000)
+    print(`\n  ${color.bold}Modo interativo por ${cfg.watchSeconds}s:${color.off} use o controle da TV (↑/↓ canal, OK pausa, ←/→ 10 s, Return encerra).`)
+    await new Promise((resolveWatch) => {
+      const timer = setTimeout(resolveWatch, cfg.watchSeconds * 1000)
+      let exitRequested = false
+      devServer.onEvent((event) => {
+        if (event.event === 'test:exit') exitRequested = true
+        if (exitRequested && (event.event === 'launcher-pagehide' || (event.event === 'launcher-visibility' && event.detail === 'hidden'))) {
+          ok('app encerrado pelo Return (app.exit via ponte) — o shell foi descarregado')
+          clearTimeout(timer)
+          setTimeout(resolveWatch, 500)
+        }
+      })
+    })
+    const remoteEvents = devServer.events.filter((event) => event.event === 'remote' || event.event === 'key')
+    info(`${remoteEvents.filter((event) => event.event === 'key').length} tecla(s) recebida(s) na TV; ${remoteEvents.filter((event) => event.event === 'remote').length} comando(s) executado(s).`)
   } else if (servesTestPage) {
     info('o servidor da página de teste é encerrado agora; reabrir o app na TV sem `npm run tv` mostrará "servidor indisponível".')
   }
   await devServer.close()
 
+  if (testErrors.length) {
+    fail(`${testErrors.length} teste(s) falharam na TV (detalhes acima).`, `Veja ${relative(root, logPath)}.`)
+  }
   print(`\n${color.ok}${color.bold}✔ iPlex (${environment}) atualizado e aberto na Samsung.${color.off}`)
   print(`${color.dim}log: ${relative(root, logPath)}${color.off}`)
 }
