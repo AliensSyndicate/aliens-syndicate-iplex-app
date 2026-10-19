@@ -11,7 +11,7 @@ controle remoto e informações da plataforma.
 | Repositório | Papel |
 |---|---|
 | **aliens-syndicate-iplex-app** (este) | app instalável nas Smart TVs |
-| iPlex Web (outro repositório) | interface principal, em `https://alienssyndicate.com/apps/iplex/` |
+| iPlex Web (outro repositório) | interface principal, no Firebase Hosting `iplex-2c8fc`: `https://iplex-2c8fc.web.app/` |
 | iPlex Gestor (outro repositório) | gestão |
 
 ## Testar na Samsung com um clique
@@ -51,10 +51,12 @@ Pré-requisitos no Mac:
 | Comando | O que faz |
 |---|---|
 | `npm run dev` | shell + página de teste no navegador (`/launcher.html`) |
+| `npm test` | testes unitários (ponte, validação, destino, disponibilidade, AVPlay, teclas) |
 | `npm run typecheck` / `npm run lint` | TypeScript / ESLint |
 | `npm run build` | build web (sanidade) |
 | `npm run build:tizen` | widget Tizen de produção em `dist-tizen/widget` |
 | `npm run package:tizen` | widget + `.wgt` assinado em `build/tizen/` |
+| `npm run probe:hosting` | gera o probe de Hosting (handshake mínimo) para o emulador ou um preview (docs/HOSTING.md) |
 | `npm run release:tizen` | verifica todos os requisitos da loja e gera o pacote de publicação em `build/release/` (`-- --candidate` gera um candidato de teste) |
 
 Para os dois últimos, acrescente `-- --env development` para usar o
@@ -64,7 +66,7 @@ ambiente de desenvolvimento.
 
 | Arquivo | Conteúdo |
 |---|---|
-| `.env.production` | URL de produção do iPlex Web: `https://alienssyndicate.com/apps/iplex/` |
+| `.env.production` | URL de produção do iPlex Web: `https://iplex-2c8fc.web.app/` |
 | `.env.development` | página de teste controlada (independente da produção) |
 | `.env` | valores comuns (tempos limite, Tizen, TV de desenvolvimento) |
 
@@ -77,10 +79,17 @@ tela do app sem depender da rede. Os ids são `checking`, `loading`,
 
 ## Documentação
 
+- [docs/ARQUITETURA.md](docs/ARQUITETURA.md): **fonte de verdade**. Fronteira
+  TV × Web × Backend, fluxo de inicialização, erros e contratos.
+- [docs/AUDITORIA.md](docs/AUDITORIA.md): auditoria do projeto e estado de
+  cada item.
+
 - [docs/TIZEN.md](docs/TIZEN.md): arquitetura, ponte, AVPlay, restrições
   da Samsung e automação da TV.
 - [docs/IPLEX-WEB.md](docs/IPLEX-WEB.md): requisitos para o iPlex Web
-  funcionar em `/apps/iplex/`.
+  funcionar dentro do app.
+- [docs/HOSTING.md](docs/HOSTING.md): Firebase Hosting `iplex-2c8fc`
+  (`firebase.json`, CSP, probe, comandos de publicação).
 - [docs/MAPA-DE-TELAS.md](docs/MAPA-DE-TELAS.md): todas as telas e funções
   do app (App × Web), para o layout.
 - [docs/PUBLICACAO.md](docs/PUBLICACAO.md): o que está pronto e o que falta

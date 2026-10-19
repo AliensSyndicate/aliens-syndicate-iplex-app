@@ -1,4 +1,4 @@
-# Requisitos do iPlex Web em `/apps/iplex/`
+# Requisitos do iPlex Web (Firebase Hosting `iplex-2c8fc`)
 
 O **iPlex Web** é a interface principal, mantida em **outro repositório**
 (React + TypeScript). Este repositório (`aliens-syndicate-iplex-app`) é o
@@ -7,57 +7,45 @@ disponível e oferece a ponte para os recursos da TV.
 
 | Ambiente | Destino carregado pela TV | Onde é configurado |
 |---|---|---|
-| Produção | `https://alienssyndicate.com/apps/iplex/` | `.env.production` |
+| Produção | `https://iplex-2c8fc.web.app/`: site `iplex-2c8fc`, raiz | `.env.production` |
+| Preview/teste | Canal de preview do mesmo site (`npm run tv -- --target <url>`) | por execução |
 | Desenvolvimento | Página de teste controlada deste repositório | `.env.development` (substituível em `.env.development.local`) |
+
+O domínio `alienssyndicate.com` pertence ao Core e **não é usado** pelo
+Player. A configuração completa do Hosting (`firebase.json`, CSP, cache,
+probe e comandos de publicação) está em [HOSTING.md](HOSTING.md).
 
 ## Situação verificada (19/10/2026)
 
-Verificação feita com `curl` usando o User-Agent de uma TV Tizen 5.5, e pelo
-próprio shell no navegador, em modo produção:
-
-- `alienssyndicate.com` resolve para `199.36.158.100`, um IP do Firebase Hosting.
-- `/apps/iplex` e `/apps/iplex/` **ainda não estão publicados**. Respondem
-  **HTTP 200** com a página `404 — Sinal perdido` do site principal (soft 404
-  gerado por uma regra de reescrita coringa).
-- `/apps/iplex/iplex-web.json` não existe. O shell mostra **"iPlex
-  indisponível no momento"** e não carrega a página de erro do site.
-- O domínio envia **`X-Frame-Options: SAMEORIGIN`** em todas as respostas.
-  Com esse cabeçalho, o iPlex Web **não pode** ser exibido dentro do app.
-
-O próprio app não presume nada disso. A cada abertura ele confere o
-manifesto. `npm run tv -- --env production` faz a mesma verificação antes de
-instalar e **para** se o iPlex Web não estiver publicado.
+- O site `iplex-2c8fc` existe (`DEFAULT_SITE`), mas ainda **não tem
+  publicação**: responde 404 "Site Not Found".
+- Na TV, o shell de produção acessa `https://iplex-2c8fc.web.app/` por HTTPS,
+  com certificado aceito pelo Tizen 5.5. Como não acha o manifesto, mostra
+  **"iPlex indisponível no momento"**.
+- `npm run tv -- --env production` faz a mesma verificação antes de instalar
+  e **para** se o iPlex Web não estiver publicado.
 
 ## Requisitos obrigatórios
 
-### 1. Base `/apps/iplex/`
+### 1. Raiz do site
 
-- No Vite, use `base: '/apps/iplex/'`. Todos os assets devem ficar sob essa
-  base e nunca na raiz do domínio.
-- No roteador (React Router ou outro), use `basename: '/apps/iplex'`.
-- `/apps/iplex` sem barra deve redirecionar para `/apps/iplex/`. O app de TV
-  já normaliza a URL, mas links externos podem chegar sem a barra.
-- Crie uma reescrita SPA `/apps/iplex/**` → `/apps/iplex/index.html`. Ela
-  **precisa ter precedência** sobre a regra coringa do site principal, que
-  hoje devolve o soft 404.
-- Rotas inexistentes **fora do app** devem continuar respondendo com o site
-  principal, sem afetar o iPlex Web.
+- No Vite, use `base: '/'`. O Web ocupa a raiz de `iplex-2c8fc.web.app`.
+- Reescrita SPA `**` → `/index.html`. Arquivos existentes têm prioridade.
 
-### 2. Manifesto de disponibilidade: `/apps/iplex/iplex-web.json`
+### 2. Manifesto de disponibilidade: `/iplex-web.json`
 
 ```json
 { "app": "iplex-web", "version": "1.0.0", "bridgeVersion": 1 }
 ```
 
-- Use `Content-Type: application/json`.
-- Use **`Access-Control-Allow-Origin: *`**. O app empacotado tem origem
-  opaca (`file://`) e só consegue ler o manifesto com CORS aberto.
-- Use `Cache-Control: no-cache`.
+- Use **`Access-Control-Allow-Origin: *`** e `Cache-Control: no-cache`. O app
+  empacotado tem origem opaca (`file://`) e só consegue ler o manifesto com
+  CORS aberto.
 - `bridgeVersion` deve ser igual a `BRIDGE_VERSION` em
   `src/bridge/protocol.ts` (hoje **1**). Se for diferente, o app mostra
   "Atualização necessária".
-- Se o arquivo não existir, devolva **404 real**. Assim o app distingue
-  "não publicado" de "servidor fora do ar".
+- Sem o arquivo, a reescrita SPA devolve HTML no lugar do JSON. O app trata
+  isso como "não publicado".
 
 ### 3. Exibição dentro do app (modo `frame`, padrão)
 
@@ -65,12 +53,18 @@ O shell instalado exibe o iPlex Web num `<iframe>` em tela cheia. É assim que
 ele mantém a ponte com as APIs da TV, que a Samsung não oferece a conteúdo
 hospedado.
 
-- **Nenhum `X-Frame-Options`** nas respostas de `/apps/iplex/**`. A regra
-  global atual (`SAMEORIGIN`) precisa ser restrita para não cobrir esse caminho.
-- A CSP `frame-ancestors` deve estar ausente ou ser `*`. A origem do app na
-  TV é opaca e não pode ser listada.
+- **Nenhum `X-Frame-Options`** e **nenhuma CSP `frame-ancestors`, nem `*`**.
+  O pai do iframe é `file://`. **Verificado na TV:** com `frame-ancestors *`
+  o iframe foi bloqueado; sem ele, o handshake funcionou.
 - A CSP não pode usar `unsafe-inline` nem `unsafe-eval`. É exigência da
-  Samsung para aplicações hospedadas ([Hosted Applications Q&A][hosted]).
+  Samsung para aplicações hospedadas ([Hosted Applications Q&A][hosted]). Na
+  prática:
+  - nada de `<script>` inline;
+  - nada de `<style>` injetado em tempo de execução;
+  - estilos via arquivos CSS (as propriedades `style` do React continuam
+    permitidas).
+- `npm run tv -- --env production` e `npm run release:tizen` reprovam
+  publicações com `X-Frame-Options` ou `frame-ancestors`.
 
 Se a exibição em iframe não for possível, existe o modo
 `VITE_IPLEX_LOAD_MODE=navigate` (navegação de nível superior). Nele **não há
@@ -99,6 +93,21 @@ O contrato está em `src/bridge/protocol.ts` e o cliente de referência em
   - `app.visibility`, `network.status`
 - Fora do app (navegador comum), `client.available` é `false`. O iPlex Web
   deve funcionar sem a ponte ou degradar com elegância.
+- **Capacidades:** o `app.ready` devolve `PlatformInfo` com:
+  - plataforma e versões;
+  - `bridge.methods`, para detectar recursos;
+  - `installationId`;
+  - modelo e tela;
+  - `keys`.
+- **Teclas:** compare `event.keyCode` com `PlatformInfo.keys`. Os códigos
+  mudam por modelo. Teclas de mídia e canal só chegam porque o shell as
+  registra. Teclas que caem no shell chegam ao Web pelo evento `remote.key`.
+- **Versões:** um pedido de outra versão da ponte recebe o erro
+  `unsupported_version`.
+- **Identidade:** o `installationId` é só uma dica. A identidade do
+  dispositivo vem do pareamento no backend, cujo schema já existe no
+  Gestor: `pairingSessionInputSchema`; ver [HOSTING.md](HOSTING.md#pendências-de-integração). Veja
+  [ARQUITETURA.md](ARQUITETURA.md#5-contratos-web--backend-propostas-não-implementados-aqui).
 
 ```ts
 const bridge = createBridgeClient()
@@ -123,8 +132,8 @@ await bridge.call('player.open', { url: streamUrl, autoplay: true })
 - Return na tela inicial: chame `app.exit` (com confirmação, se desejar).
   Nas demais telas, volte uma tela.
 - **Não trate o Exit (10182).** A Samsung exige o comportamento padrão.
-- Teclas de mídia (play/pause etc.) exigem registro no shell. Ainda não estão
-  no contrato.
+- Teclas de mídia e canal (⏯, ▶, ⏸, ⏹, ⏩, ⏪, CH+, CH−) são registradas
+  pelo shell. Os códigos reais estão em `PlatformInfo.keys`.
 
 ### 7. Compatibilidade com as TVs
 
@@ -138,38 +147,15 @@ await bridge.call('player.open', { url: streamUrl, autoplay: true })
 - A tela é 1920×1080 (dimensione com `vw`/`vh`). Não use hover nem ponteiro
   como única forma de interação.
 
-## Exemplo de cabeçalhos (Firebase Hosting)
+## Configuração do Hosting
 
-O domínio é servido pelo Firebase Hosting e o site principal tem
-configuração própria. O trecho abaixo é **ilustrativo**: a decisão de como
-publicar o iPlex Web sob o mesmo domínio fica com o repositório Web. Pode ser
-um deploy coordenado no mesmo site ou uma reescrita para outro serviço.
-
-```json
-{
-  "hosting": {
-    "rewrites": [
-      { "source": "/apps/iplex/**", "destination": "/apps/iplex/index.html" }
-    ],
-    "headers": [
-      {
-        "source": "/apps/iplex/iplex-web.json",
-        "headers": [
-          { "key": "Access-Control-Allow-Origin", "value": "*" },
-          { "key": "Cache-Control", "value": "no-cache" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-O `X-Frame-Options` global precisa deixar de valer para `/apps/iplex/**`.
+O `firebase.json` completo e verificado (CSP, cache, CORS do manifesto, SPA)
+e os comandos de publicação estão em [HOSTING.md](HOSTING.md).
 
 ## Como verificar a publicação
 
 ```bash
-curl -sI https://alienssyndicate.com/apps/iplex/iplex-web.json
+curl -sI https://iplex-2c8fc.web.app/iplex-web.json
 ```
 
 ```bash

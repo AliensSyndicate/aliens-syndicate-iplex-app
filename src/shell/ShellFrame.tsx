@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { createBridgeHost, type BridgeHost } from '../bridge/host'
+import type { RemoteKeyName } from '../bridge/protocol'
 import { subscribeNetworkChanges } from '../connection/connectivity'
 import { reportDevEvent } from '../devtools/devReport'
 import { getPlatform } from '../platform'
@@ -42,11 +43,33 @@ export function ShellFrame({ url, allowedOrigins, targetOrigin, visible, onReady
       onRequest: (method, outcome) => reportDevEvent('bridge', `${method} ${outcome}`),
     })
 
-    const handleVisibility = () => services.setVisible(!document.hidden)
+    const handleVisibility = () => {
+      services.setVisible(!document.hidden)
+      // Retomada (multitarefa): o foco do controle remoto volta ao Web.
+      if (!document.hidden && frame.classList.contains('is-visible')) {
+        frame.focus()
+        frame.contentWindow?.focus()
+      }
+    }
     document.addEventListener('visibilitychange', handleVisibility)
     const unsubscribeNetwork = subscribeNetworkChanges((online) => services.setOnline(online))
 
+    // Tecla recebida pelo shell com o Web visível (foco fora do iframe):
+    // reencaminha normalizada (remote.key) e devolve o foco ao Web.
+    const keyNames = Object.entries(getPlatform().keys) as [RemoteKeyName, number][]
+    const handleShellKey = (event: KeyboardEvent) => {
+      if (!frame.classList.contains('is-visible')) return
+      const match = keyNames.find(([, code]) => code === event.keyCode)
+      if (!match) return
+      event.preventDefault()
+      host?.emit('remote.key', { key: match[0], keyCode: event.keyCode })
+      frame.focus()
+      frame.contentWindow?.focus()
+    }
+    document.addEventListener('keydown', handleShellKey)
+
     return () => {
+      document.removeEventListener('keydown', handleShellKey)
       document.removeEventListener('visibilitychange', handleVisibility)
       unsubscribeNetwork()
       services.dispose()

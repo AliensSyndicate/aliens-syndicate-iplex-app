@@ -16,16 +16,55 @@ export const BRIDGE_VERSION = 1
 
 export type PlatformId = 'tizen' | 'webos' | 'browser'
 
+/**
+ * Teclas normalizadas. Os códigos (keyCode) variam por modelo e plataforma:
+ * o shell informa em PlatformInfo.keys o código real de cada tecla neste
+ * aparelho, e o Web compara `event.keyCode` com esse mapa.
+ */
+export type RemoteKeyName =
+  | 'ArrowUp'
+  | 'ArrowDown'
+  | 'ArrowLeft'
+  | 'ArrowRight'
+  | 'Enter'
+  | 'Back'
+  | 'MediaPlayPause'
+  | 'MediaPlay'
+  | 'MediaPause'
+  | 'MediaStop'
+  | 'MediaFastForward'
+  | 'MediaRewind'
+  | 'ChannelUp'
+  | 'ChannelDown'
+
+export type RemoteKeyMap = Partial<Record<RemoteKeyName, number>>
+
 export interface PlatformInfo {
   platform: PlatformId
   platformVersion: string | null
   appVersion: string
   userAgent: string
+  /** Versão da ponte implementada pelo shell e métodos disponíveis (detecção de recursos). */
+  bridge: { version: number; methods: BridgeMethod[] }
+  /**
+   * Identificador desta instalação (aleatório, gerado pelo shell, perdido ao
+   * desinstalar). É uma DICA para o backend, nunca prova de identidade.
+   */
+  installationId: string
+  device: {
+    /** Modelo informado pelo sistema, quando disponível. */
+    model: string | null
+    screen: { width: number; height: number }
+  }
+  /** Código real de cada tecla neste aparelho (inclui as teclas de mídia registradas). */
+  keys: RemoteKeyMap
   capabilities: {
     /** Player nativo da TV (Tizen: AVPlay). Falso = HTML5 <video>. */
     nativePlayer: boolean
     /** app.exit encerra o aplicativo de fato. */
     exit: boolean
+    /** Teclas de mídia/canal registradas pelo shell (chegam ao Web como keydown). */
+    mediaKeys: boolean
   }
 }
 
@@ -96,9 +135,17 @@ export interface BridgeEvents {
   'player.error': PlayerErrorInfo
   'player.ended': PlayerStatus
   'player.subtitle': { text: string; durationMs: number }
-  /** O app foi ocultado/reexibido (multitarefa). Oculto durante reprodução => player parado. */
+  /**
+   * O app foi suspenso/retomado (multitarefa). Equivale a app.suspend/app.resume:
+   * oculto durante reprodução => player parado; ao voltar, o foco retorna ao Web.
+   */
   'app.visibility': { visible: boolean }
   'network.status': { online: boolean }
+  /**
+   * Tecla recebida pelo SHELL (o foco estava fora do Web) e reencaminhada.
+   * Com o foco no Web, as teclas chegam direto como keydown.
+   */
+  'remote.key': { key: RemoteKeyName; keyCode: number }
 }
 
 export type BridgeEventName = keyof BridgeEvents
@@ -109,6 +156,7 @@ export type BridgeErrorCode =
   | 'invalid_params'
   | 'not_supported'
   | 'player_error'
+  | 'unsupported_version'
   | 'internal'
 
 interface Envelope {
@@ -150,6 +198,23 @@ export function isBridgeRequest(value: unknown): value is BridgeRequestMessage {
     value.id.length > 0 &&
     value.id.length <= 64 &&
     typeof value.method === 'string'
+  )
+}
+
+/**
+ * Pedido do protocolo iplex-bridge, mas de outra versão: o shell responde
+ * `unsupported_version` em vez de ignorar (o Web pode orientar a atualização).
+ */
+export function isOtherVersionRequest(value: unknown): value is { id: string; version: unknown } {
+  if (typeof value !== 'object' || value === null) return false
+  const message = value as Record<string, unknown>
+  return (
+    message.protocol === BRIDGE_PROTOCOL &&
+    message.version !== BRIDGE_VERSION &&
+    message.kind === 'request' &&
+    typeof message.id === 'string' &&
+    message.id.length > 0 &&
+    message.id.length <= 64
   )
 }
 

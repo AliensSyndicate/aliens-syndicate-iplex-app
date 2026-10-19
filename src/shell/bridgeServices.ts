@@ -1,5 +1,6 @@
 import { BridgeHandlerError, type BridgeHandlers } from '../bridge/host'
-import type { BridgeEventName, BridgeEvents, PlatformInfo, PlayerStatus } from '../bridge/protocol'
+import { BRIDGE_METHODS, BRIDGE_VERSION, type BridgeEventName, type BridgeEvents, type PlatformInfo, type PlayerStatus } from '../bridge/protocol'
+import { getInstallationId } from '../platform/installationId'
 import type { PlatformAdapter } from '../platform/types'
 import { PlayerError, type MediaPlayer, type PlayerEvent } from '../player/types'
 
@@ -64,7 +65,11 @@ export function createBridgeServices({ platform, appVersion, onReady, emit }: Se
     platformVersion: platform.platformVersion,
     appVersion,
     userAgent: navigator.userAgent,
-    capabilities: { nativePlayer: platform.nativePlayer, exit: platform.canExit },
+    bridge: { version: BRIDGE_VERSION, methods: [...BRIDGE_METHODS] },
+    installationId: getInstallationId(),
+    device: { model: platform.model, screen: { width: window.screen.width, height: window.screen.height } },
+    keys: { ...platform.keys },
+    capabilities: { nativePlayer: platform.nativePlayer, exit: platform.canExit, mediaKeys: platform.mediaKeys },
   })
 
   const handlers: BridgeHandlers = {

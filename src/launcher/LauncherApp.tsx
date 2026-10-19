@@ -101,7 +101,7 @@ function bridgeOrigins(config: LauncherConfig): { allowedOrigins: string; target
 }
 
 export function LauncherApp() {
-  const { state, online, retry, markReady, config } = useLauncher()
+  const { state, online, retry, markReady, config, autoRetry } = useLauncher()
   const status = statusFor(state)
   const running = state.phase === 'running'
 
@@ -148,6 +148,11 @@ export function LauncherApp() {
             {status.busy && <div className="launcher-spinner" aria-hidden="true" />}
             <h1 className="launcher-title">{status.title}</h1>
             <p className="launcher-message">{status.message}</p>
+            {autoRetry && (
+              <p className="launcher-code">
+                Nova tentativa automática em {autoRetry.inSeconds} s ({autoRetry.attempt}/{autoRetry.of}).
+              </p>
+            )}
             {status.failure && (
               <p className="launcher-code">
                 {config?.environment === 'production'

@@ -9,6 +9,10 @@ export function createBrowserAdapter(): PlatformAdapter {
     platformVersion: null,
     canExit: false,
     nativePlayer: false,
+    model: null,
+    // Navegador: Escape faz o papel do Return.
+    keys: { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Back: 27 },
+    mediaKeys: false,
     exit() {
       console.info('[iPlex] exit() ignorado: disponível apenas na TV.')
     },

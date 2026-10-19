@@ -3,6 +3,7 @@ import {
   BRIDGE_PROTOCOL,
   BRIDGE_VERSION,
   isBridgeRequest,
+  isOtherVersionRequest,
   type BridgeErrorCode,
   type BridgeEventMessage,
   type BridgeEventName,
@@ -29,7 +30,7 @@ export class BridgeHandlerError extends Error {
 
 export interface BridgeHostOptions {
   frame: HTMLIFrameElement
-  /** Origens aceitas, exatas (ex.: ["https://alienssyndicate.com"]). */
+  /** Origens aceitas, exatas (ex.: ["https://iplex-2c8fc.web.app"]). */
   allowedOrigins: readonly string[]
   /**
    * Destino das respostas/eventos: a origem exata do frontend remoto. Para o
@@ -69,6 +70,15 @@ export function createBridgeHost({ frame, allowedOrigins, targetOrigin, handlers
     if (event.source !== frame.contentWindow) return
     if (!origins.has(event.origin)) return
     const message: unknown = event.data
+    if (isOtherVersionRequest(message)) {
+      onRequest?.('?', 'unsupported_version')
+      reply(message.id, {
+        ok: false,
+        code: 'unsupported_version',
+        message: `Ponte v${String(message.version)} não suportada; este app implementa a v${BRIDGE_VERSION}`,
+      })
+      return
+    }
     if (!isBridgeRequest(message)) return
 
     const { id, method } = message

@@ -79,7 +79,7 @@ export const PREVIEW_SCREENS = [
 function previewState(): { state: LauncherState; online: boolean } | null {
   if (!import.meta.env.DEV) return null
   const screen = new URLSearchParams(window.location.search).get('screen')
-  const url = config instanceof LaunchConfigError ? 'https://alienssyndicate.com/apps/iplex/' : config.target.url
+  const url = config instanceof LaunchConfigError ? 'https://iplex-2c8fc.web.app/' : config.target.url
   const failed = (failure: LaunchFailure): LauncherState => ({ phase: 'failed', failure })
   switch (screen) {
     case 'checking':
@@ -122,10 +122,19 @@ function initialState(): LauncherState {
 
 const RETRY_ON_RECONNECT: LaunchFailure['kind'][] = ['offline', 'unreachable', 'server-error']
 
+/**
+ * Retry controlado: falhas do servidor tentam de novo sozinhas, com espera
+ * crescente e número limitado. Depois disso, só pelo botão (sem laço infinito).
+ */
+export const AUTO_RETRY_DELAYS_MS = [5000, 15000, 45000]
+const AUTO_RETRY_KINDS: LaunchFailure['kind'][] = ['unreachable', 'server-error', 'not-deployed', 'load-timeout']
+
 export function useLauncher() {
   const [state, setState] = useState<LauncherState>(initialState)
   const [request, setRequest] = useState<number | null>(() => (!preview && state.phase === 'checking' ? 0 : null))
   const [online, setOnline] = useState(() => (preview ? preview.online : navigator.onLine !== false))
+  /** Tentativas automáticas já feitas desde a última abertura bem-sucedida ou tentativa manual. */
+  const [autoRetries, setAutoRetries] = useState(0)
 
   useEffect(() => {
     if (!preview && config instanceof LaunchConfigError) logLaunchEvent('config-error', config.message)
@@ -209,12 +218,31 @@ export function useLauncher() {
   const retry = () => {
     if (config instanceof LaunchConfigError) return
     writeOpened(null)
+    setAutoRetries(0)
     setState({ phase: 'checking' })
     setRequest((value) => (value ?? 0) + 1)
   }
 
+  const nextAutoRetryMs =
+    !preview && state.phase === 'failed' && AUTO_RETRY_KINDS.includes(state.failure.kind) && autoRetries < AUTO_RETRY_DELAYS_MS.length
+      ? AUTO_RETRY_DELAYS_MS[autoRetries]
+      : null
+  useEffect(() => {
+    if (nextAutoRetryMs === null) return
+    const timer = window.setTimeout(() => {
+      logLaunchEvent('auto-retry', `${autoRetries + 1}/${AUTO_RETRY_DELAYS_MS.length}`)
+      writeOpened(null)
+      setAutoRetries((count) => count + 1)
+      setState({ phase: 'checking' })
+      setRequest((value) => (value ?? 0) + 1)
+    }, nextAutoRetryMs)
+    return () => window.clearTimeout(timer)
+  }, [nextAutoRetryMs, autoRetries])
+
   const markReady = (frontendVersion: string | undefined) => {
     if (state.phase !== 'loading') return
+    // Só uma abertura completa (app.ready) zera o limite de tentativas automáticas.
+    setAutoRetries(0)
     logLaunchEvent('frame-ready', frontendVersion ?? 'sem versão')
     setState({ phase: 'running', url: state.url, frontendVersion: frontendVersion ?? null })
   }
@@ -240,6 +268,10 @@ export function useLauncher() {
     online,
     retry,
     markReady,
+    autoRetry:
+      nextAutoRetryMs === null
+        ? null
+        : { inSeconds: Math.round(nextAutoRetryMs / 1000), attempt: autoRetries + 1, of: AUTO_RETRY_DELAYS_MS.length },
     config: config instanceof LaunchConfigError ? null : config,
   }
 }

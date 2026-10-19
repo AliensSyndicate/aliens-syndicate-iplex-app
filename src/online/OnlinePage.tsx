@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { BridgeCallError, createBridgeClient } from '../bridge/client'
-import type { BridgeEventName, BridgeEvents, MediaTrack, PlatformInfo, PlayerStatus } from '../bridge/protocol'
+import type { BridgeEventName, BridgeEvents, MediaTrack, PlatformInfo, PlayerStatus, RemoteKeyMap, RemoteKeyName } from '../bridge/protocol'
 import { subscribeNetworkChanges } from '../connection/connectivity'
 import { reportDevEvent } from '../devtools/devReport'
-import { describeKey, toRemoteAction, type RemoteAction } from '../navigation/remoteKeys'
+import { toRemoteAction } from '../navigation/remoteKeys'
 import { IplexWordmark } from '../ui/IplexWordmark'
 import './online.css'
 
@@ -34,6 +34,18 @@ interface Step {
 let started = false
 let interactive = false
 let currentChannel = 0
+/** Mapa de teclas informado pelo shell (app.ready). */
+let keyMap: RemoteKeyMap = {}
+
+const BASIC_KEYS = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', enter: 'Enter', back: 'Back' } as const
+
+/** Tecla normalizada: primeiro pelo mapa do shell (inclui mídia), depois pelas teclas básicas. */
+function keyFromEvent(event: KeyboardEvent): RemoteKeyName | null {
+  const match = (Object.entries(keyMap) as [RemoteKeyName, number][]).find(([, code]) => code === event.keyCode)
+  if (match) return match[0]
+  const action = toRemoteAction(event)
+  return action ? BASIC_KEYS[action] : null
+}
 
 function errorText(error: unknown): string {
   if (error instanceof BridgeCallError) return `${error.code}: ${error.message}`
@@ -168,7 +180,17 @@ export function OnlinePage() {
         async () => {
           const platformInfo = await bridge.call('app.ready', { version: 'test-page' })
           setInfo(platformInfo)
-          return `${platformInfo.platform} ${platformInfo.platformVersion ?? ''} · player nativo: ${platformInfo.capabilities.nativePlayer ? 'AVPlay' : 'HTML5'}`
+          keyMap = platformInfo.keys
+          const mediaKeys = Object.keys(platformInfo.keys).filter((name) => /^(Media|Channel)/.test(name))
+          return [
+            `${platformInfo.platform} ${platformInfo.platformVersion ?? ''}`,
+            `ponte v${platformInfo.bridge.version} (${platformInfo.bridge.methods.length} métodos)`,
+            `player ${platformInfo.capabilities.nativePlayer ? 'AVPlay' : 'HTML5'}`,
+            `modelo ${platformInfo.device.model ?? '—'}`,
+            `tela ${platformInfo.device.screen.width}x${platformInfo.device.screen.height}`,
+            `teclas de mídia: ${mediaKeys.join(', ') || 'nenhuma'}`,
+            `instalação ${platformInfo.installationId.slice(0, 8)}…`,
+          ].join(' · ')
         },
         true,
       )
@@ -293,52 +315,74 @@ export function OnlinePage() {
 
   // Controle remoto: registra todas as teclas; no modo interativo, comanda o player.
   useEffect(() => {
-    const remote = async (action: RemoteAction) => {
-      switch (action) {
-        case 'up':
-        case 'down': {
-          const next = (currentChannel + (action === 'up' ? 1 : CHANNELS.length - 1)) % CHANNELS.length
-          currentChannel = next
-          await bridge.call('player.open', { url: CHANNELS[next], autoplay: true })
-          return `${channelName(next)} aberto`
-        }
-        case 'enter': {
+    const seekBy = async (deltaMs: number) => {
+      const status = await bridge.call('player.getStatus')
+      const target = Math.max(0, status.positionMs + deltaMs)
+      await bridge.call('player.seek', { positionMs: target })
+      return `busca para ${target} ms`
+    }
+    const switchChannel = async (step: 1 | -1) => {
+      const next = (currentChannel + (step === 1 ? 1 : CHANNELS.length - 1)) % CHANNELS.length
+      currentChannel = next
+      await bridge.call('player.open', { url: CHANNELS[next], autoplay: true })
+      return `${channelName(next)} aberto`
+    }
+    const remote = async (key: RemoteKeyName): Promise<string | null> => {
+      switch (key) {
+        case 'ArrowUp':
+        case 'ChannelUp':
+          return switchChannel(1)
+        case 'ArrowDown':
+        case 'ChannelDown':
+          return switchChannel(-1)
+        case 'Enter':
+        case 'MediaPlayPause': {
           const status = await bridge.call('player.getStatus')
           const after = status.state === 'playing' ? await bridge.call('player.pause') : await bridge.call('player.play')
           return `estado ${after.state}`
         }
-        case 'left':
-        case 'right': {
-          const status = await bridge.call('player.getStatus')
-          const target = Math.max(0, status.positionMs + (action === 'right' ? SEEK_STEP_MS : -SEEK_STEP_MS))
-          await bridge.call('player.seek', { positionMs: target })
-          return `busca para ${target} ms`
-        }
-        case 'back':
-          return 'encerrando'
+        case 'MediaPlay':
+          return `estado ${(await bridge.call('player.play')).state}`
+        case 'MediaPause':
+          return `estado ${(await bridge.call('player.pause')).state}`
+        case 'MediaStop':
+          return `estado ${(await bridge.call('player.stop')).state}`
+        case 'ArrowRight':
+        case 'MediaFastForward':
+          return seekBy(SEEK_STEP_MS)
+        case 'ArrowLeft':
+        case 'MediaRewind':
+          return seekBy(-SEEK_STEP_MS)
+        default:
+          return null
       }
     }
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const action = toRemoteAction(event)
-      setLastKey(`${describeKey(event)} (keyCode ${event.keyCode})${action ? ` → ${action}` : ''}`)
-      if (action === 'back') {
-        event.preventDefault()
+    const handleKey = (key: RemoteKeyName | null, keyCode: number, origin: 'iframe' | 'shell', event?: KeyboardEvent) => {
+      setLastKey(`${key ?? 'desconhecida'} (keyCode ${keyCode}${origin === 'shell' ? ', via shell' : ''})`)
+      if (key === 'Back') {
+        event?.preventDefault()
         reportDevEvent('test:exit', 'Return → app.exit')
         // Dentro do shell, Return na tela principal encerra o app pela ponte.
         if (bridge.available) void bridge.call('app.exit').catch(() => undefined)
         else window.history.back()
         return
       }
-      if (!action || !interactive || CHANNELS.length === 0) return
-      event.preventDefault()
-      remote(action).then(
-        (result) => reportDevEvent('remote', `${action}: ${result}`),
-        (error: unknown) => reportDevEvent('remote', `${action}: erro ${errorText(error)}`),
+      if (!key || !interactive || CHANNELS.length === 0) return
+      event?.preventDefault()
+      remote(key).then(
+        (result) => result && reportDevEvent('remote', `${key}: ${result}`),
+        (error: unknown) => reportDevEvent('remote', `${key}: erro ${errorText(error)}`),
       )
     }
+
+    const handleKeyDown = (event: KeyboardEvent) => handleKey(keyFromEvent(event), event.keyCode, 'iframe', event)
+    const stopForwarded = bridge.on('remote.key', ({ key, keyCode }) => handleKey(key, keyCode, 'shell'))
     document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      stopForwarded()
+    }
   }, [])
 
   const rows: [string, string][] = [
@@ -375,7 +419,7 @@ export function OnlinePage() {
 
       <section className="online-keys">
         <h2>{ready ? 'Controle remoto ativo' : 'Teste automático em andamento…'}</h2>
-        <p>↑/↓ canal · OK pausa/continua · ←/→ 10 s · Return encerra</p>
+        <p>↑/↓ ou CH+/CH− canal · OK ou ⏯ pausa/continua · ⏹ para · ←/→ ou ⏪/⏩ 10 s · Return encerra</p>
         {lastKey && <p>Última tecla: {lastKey}</p>}
       </section>
     </main>

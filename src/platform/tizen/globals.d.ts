@@ -3,6 +3,7 @@
  * documentados e efetivamente utilizados.
  *  - Tizen Application API: tizen.application.getCurrentApplication().exit()
  *  - Tizen SystemInfo API:  tizen.systeminfo.getCapability(key)
+ *  - TVInputDevice API:     tizen.tvinputdevice (privilégio tv.inputdevice)
  *  - Samsung AVPlay API:    webapis.avplay (requer $WEBAPIS/webapis/webapis.js)
  */
 
@@ -18,6 +19,20 @@ interface TizenGlobal {
   systeminfo: {
     getCapability(key: string): unknown
   }
+  tvinputdevice?: TizenTvInputDevice
+}
+
+interface TizenInputDeviceKey {
+  name: string
+  code: number
+}
+
+interface TizenTvInputDevice {
+  getSupportedKeys(): TizenInputDeviceKey[]
+  getKey(keyName: string): TizenInputDeviceKey | null
+  registerKey(keyName: string): void
+  /** Disponível desde a API 2.4 (TVs 2016+). */
+  registerKeyBatch?(keyNames: string[], successCallback?: () => void, errorCallback?: (error: unknown) => void): void
 }
 
 type AVPlayPlayerState = 'NONE' | 'IDLE' | 'READY' | 'PLAYING' | 'PAUSED'

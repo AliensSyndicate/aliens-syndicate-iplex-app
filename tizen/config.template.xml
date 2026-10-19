@@ -14,9 +14,10 @@
     <icon src="icon.png"/>
     <content src="launcher.html"/>
 
-    <!-- Único privilégio necessário: acesso à internet. Teclas obrigatórias
-         (setas, Enter, Return) não exigem tv.inputdevice. -->
+    <!-- internet: carregar o iPlex Web. tv.inputdevice: registrar as teclas de
+         mídia/canal usadas pelo player (setas, Enter e Return não precisam). -->
     <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
 
     <!-- Política de acesso a recursos externos (W3C WARP) e de navegação de
          nível superior, derivadas de VITE_IPLEX_TARGET_URL + IPLEX_TIZEN_EXTRA_HOSTS. -->

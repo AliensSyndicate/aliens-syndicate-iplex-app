@@ -9,7 +9,7 @@ Samsung exige no Seller Office.
 ```mermaid
 flowchart LR
     TV["Smart TV<br/>(Samsung Tizen)"] --> APP["iPlex App<br/>este repositório<br/>instalado pela loja"]
-    APP -- "abre pela URL<br/>https://alienssyndicate.com/apps/iplex/" --> WEB["iPlex Web<br/>outro repositório<br/>hospedado"]
+    APP -- "abre pela URL<br/>https://iplex-2c8fc.web.app/" --> WEB["iPlex Web<br/>outro repositório<br/>hospedado"]
     WEB -- "ponte postMessage<br/>(player, plataforma, sair)" --> APP
 ```
 
@@ -145,9 +145,8 @@ desenvolvimento** e não entra no pacote da loja.
 - **Quando aparece:** o servidor responde, mas o iPlex Web não está lá. Os
   casos são: manifesto ausente ou sem CORS, uma página do site no lugar do
   manifesto (*soft 404*), ou HTTP 404.
-- **Hoje:** é a tela que a TV mostra em produção, porque `/apps/iplex/` ainda
-  não está publicado. Isso foi verificado no aparelho.
-- **Textos:** "iPlex indisponível no momento" / "O iPlex está temporariamente
+- **Hoje:** é a tela que a TV mostra em produção, porque o site `iplex-2c8fc`
+  ainda não tem publicação. Isso foi verificado no aparelho.
   fora do ar. Tente novamente mais tarde."
 - **Ações:** **Tentar novamente** e **Sair**. Serve também como tela de
   manutenção.

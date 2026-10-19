@@ -76,8 +76,10 @@ export async function verifyWebTarget(raw, { loadMode = 'frame', bridgeVersion }
       if (frameOptions) {
         problems.push(`${base.href} envia "X-Frame-Options: ${frameOptions}": não pode ser exibido dentro do app`)
       }
-      if (frameAncestors && frameAncestors !== '*') {
-        warnings.push(`CSP frame-ancestors "${frameAncestors}" pode impedir o app de exibir o iPlex Web`)
+      // O pai do iframe é o app empacotado (file://): nenhuma lista frame-ancestors
+      // o autoriza, nem "*". Verificado na Samsung (Tizen 5.5): bloqueia o iframe.
+      if (frameAncestors !== undefined) {
+        problems.push(`${base.href} envia CSP "frame-ancestors ${frameAncestors}": bloqueia o iframe do app (pai file://)`)
       }
     } catch (error) {
       problems.push(`página ${base.href} inacessível: ${error.cause?.message ?? error.message}`)

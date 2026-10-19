@@ -5,6 +5,7 @@
  *   npm run tv                      (ou duplo clique em iPlex-TV.command)
  *   npm run tv -- --env production  (destino de produção, verificado antes)
  *   npm run tv -- --env production --allow-unpublished  (valida a tela "indisponível")
+ *   npm run tv -- --target http://<ip-do-mac>:5050/      (probe no emulador do Hosting)
  *   npm run tv -- --host 192.168.0.50 [--port 26101] [--force-install] [--watch 60]
  *
  * Etapas: ferramentas → TV na rede → servidor SDB → conexão → autorização →
@@ -69,7 +70,9 @@ const cfg = {
   profile: env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-dev',
   packageId: env.IPLEX_TIZEN_PACKAGE_ID || 'iPlexTVApp',
   version: env.IPLEX_TIZEN_VERSION || '1.0.0',
-  target: (env.VITE_IPLEX_TARGET_URL || '').trim(),
+  // --target substitui o destino do ambiente nesta execução (ex.: probe no emulador do Hosting).
+  target: (argValue('--target') || env.VITE_IPLEX_TARGET_URL || '').trim(),
+  targetOverride: Boolean(argValue('--target')),
   loadMode: env.VITE_IPLEX_LOAD_MODE === 'navigate' ? 'navigate' : 'frame',
 }
 const appId = `${cfg.packageId}.IplexTV`
@@ -480,6 +483,11 @@ async function main() {
     })
     ok(`página de teste controlada servida por este Mac: ${devServerOrigin}/index.html`)
   } else if (remoteTarget) {
+    if (cfg.targetOverride) buildEnv.VITE_IPLEX_TARGET_URL = cfg.target
+    if (/^http:/i.test(cfg.target)) {
+      if (environment !== 'development') fail('Destino http só é permitido no ambiente development.')
+      buildEnv.VITE_IPLEX_ALLOW_INSECURE_TARGET = 'true'
+    }
     const { base, manifest, ok: published } = await requireWebTarget(cfg.target)
     if (published) {
       expectTestPage = manifest.version === 'test-page'

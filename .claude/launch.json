@@ -4,32 +4,75 @@
     {
       "name": "iplex-dev",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--port", "5173", "--strictPort"],
+      "runtimeArgs": [
+        "vite",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
       "port": 5173
     },
     {
       "name": "iplex-dev-production-url",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "--mode", "production", "--port", "5177", "--strictPort"],
+      "runtimeArgs": [
+        "vite",
+        "--mode",
+        "production",
+        "--port",
+        "5177",
+        "--strictPort"
+      ],
       "port": 5177
     },
     {
       "name": "iplex-dev-unreachable",
       "runtimeExecutable": "env",
-      "runtimeArgs": ["VITE_IPLEX_TARGET_URL=https://iplex-unreachable-test.invalid", "npx", "vite", "--port", "5174", "--strictPort"],
+      "runtimeArgs": [
+        "VITE_IPLEX_TARGET_URL=https://iplex-unreachable-test.invalid",
+        "npx",
+        "vite",
+        "--port",
+        "5174",
+        "--strictPort"
+      ],
       "port": 5174
     },
     {
       "name": "iplex-dev-invalid-config",
       "runtimeExecutable": "env",
-      "runtimeArgs": ["VITE_IPLEX_TARGET_URL=http://www.google.com", "npx", "vite", "--port", "5175", "--strictPort"],
+      "runtimeArgs": [
+        "VITE_IPLEX_TARGET_URL=http://www.google.com",
+        "npx",
+        "vite",
+        "--port",
+        "5175",
+        "--strictPort"
+      ],
       "port": 5175
     },
     {
       "name": "iplex-tizen-widget",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "5176", "--bind", "127.0.0.1", "--directory", "dist-tizen/widget"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5176",
+        "--bind",
+        "127.0.0.1",
+        "--directory",
+        "dist-tizen/widget"
+      ],
       "port": 5176
+    },
+    {
+      "name": "iplex-hosting-emulator",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "cd build/hosting-probe && firebase emulators:start --only hosting --project iplex-2c8fc"
+      ],
+      "port": 5050
     }
   ]
 }

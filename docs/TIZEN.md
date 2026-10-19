@@ -3,7 +3,7 @@
 Aplicativo instalado nas Smart TVs Samsung (Tizen) do ecossistema iPlex.
 Este repositório (`aliens-syndicate-iplex-app`) gera apenas o app das lojas.
 A interface principal é o **iPlex Web**, hospedado em
-`https://alienssyndicate.com/apps/iplex/` e mantido em outro repositório (veja
+`https://iplex-2c8fc.web.app/` (Firebase Hosting `iplex-2c8fc`) e mantido em outro repositório (veja
 [IPLEX-WEB.md](IPLEX-WEB.md)). O **iPlex Gestor** também é independente.
 
 ## 1. Referência: Dream+TV (engenharia reversa com REA)
@@ -80,7 +80,7 @@ iframe.
 | Arquivo | Conteúdo |
 |---|---|
 | `.env` | comum: modo de carregamento, tempos limite, Tizen, TV de desenvolvimento |
-| `.env.production` | `VITE_IPLEX_TARGET_URL=https://alienssyndicate.com/apps/iplex/` (**único** lugar com a URL) |
+| `.env.production` | `VITE_IPLEX_TARGET_URL=https://iplex-2c8fc.web.app/` (**único** lugar com a URL) |
 | `.env.development` | página de teste controlada (`./index.html`) e mídia de teste |
 | `.env.local`, `.env.<amb>.local` | substituições locais, não versionadas |
 
@@ -89,7 +89,7 @@ iframe.
 - Em produção, o widget leva só o shell. A página de teste e o `public/` não
   entram.
 - O `config.xml` é gerado a partir do destino: `<access>` e
-  `<tizen:allow-navigation>` liberam `alienssyndicate.com` e seus
+  `<tizen:allow-navigation>` liberam `iplex-2c8fc.web.app` e seus
   subdomínios. O Google não é mais dependência.
 
 ### Ponte e segurança
@@ -99,7 +99,7 @@ todas as condições abaixo valem:
 
 1. `event.source` é o iframe do frontend.
 2. `event.origin` é exatamente a origem configurada (produção:
-   `https://alienssyndicate.com`).
+   `https://iplex-2c8fc.web.app`).
 3. O método está em `BRIDGE_METHODS`.
 4. Os parâmetros passam na validação. Mídia só `http(s)`, sem `file:`,
    `data:` nem `javascript:`. Números são inteiros ≥ 0.
@@ -270,6 +270,10 @@ teste era servida pelo Mac e carregada no shell via iframe.
 | ←/→ busca de ±10 s pelo controle | ok |
 | OK pausa/continua pelo controle | ok |
 | Return encerra o app (`app.exit` pela ponte) | ok: frontend e shell descarregados (`pagehide`) |
+| Capacidades reais via ponte (auditoria) | ok: Tizen 5.5, modelo UN65TU7020GXZD, tela 1920×1080, ponte v1 com 12 métodos, `installationId` |
+| Registro das teclas de mídia/canal (`tv.inputdevice`) | ok: 8 teclas registradas com os códigos do aparelho. **Pressioná-las não foi validado**: nenhuma tecla na janela interativa |
+| Suspensão (app para segundo plano) | ok: `visibilitychange hidden` no shell e `app.visibility { visible: false }` entregue ao Web |
+| Retomada | **não validada**: ao abrir o navegador da TV por cima, a TV **encerrou** o iPlex (gerenciamento de memória) e ele reiniciou do zero, refazendo as verificações. A retomada sem reinício (Home → reabrir) ainda precisa de teste com o controle |
 
 Correções feitas a partir desses testes:
 

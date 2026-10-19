@@ -2,7 +2,7 @@
  * Configuração do destino carregado pelo shell, por ambiente.
  *
  * Única leitura das variáveis no código. Os valores ficam nos arquivos do Vite:
- *   .env.production   -> VITE_IPLEX_TARGET_URL=https://alienssyndicate.com/apps/iplex/
+ *   .env.production   -> VITE_IPLEX_TARGET_URL=https://iplex-2c8fc.web.app/
  *   .env.development  -> página de teste controlada (desenvolvimento)
  *   .env              -> valores comuns (tempos limite, modo de carregamento)
  *

@@ -36,10 +36,10 @@ publicado.
 
 ### 1. Publicar o iPlex Web
 
-Siga [IPLEX-WEB.md](IPLEX-WEB.md):
-- manifesto `iplex-web.json` com CORS;
-- reescrita SPA em `/apps/iplex/`;
-- **sem `X-Frame-Options`** nesse caminho. Hoje o domínio envia `SAMEORIGIN`.
+Siga [HOSTING.md](HOSTING.md):
+- publicar no site `iplex-2c8fc` com `firebase deploy --only hosting`;
+- incluir o manifesto `iplex-web.json` com CORS;
+- **não** enviar `X-Frame-Options` nem CSP `frame-ancestors`.
 
 ### 2. Certificado Samsung (perfil `iplex-samsung`)
 
