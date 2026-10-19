@@ -43,7 +43,7 @@ execução ficam em `build/logs/`.
 Pré-requisitos no Mac:
 - Tizen Studio CLI em `~/tizen-studio`;
 - Rosetta 2 (o `sdb` é x86_64);
-- perfil de assinatura `iplex-dev`;
+- perfil de assinatura Samsung `iplex-tv` (Certificate Manager), com o DUID da TV;
 - TV em Modo Desenvolvedor com o IP deste Mac.
 
 ## Outros comandos

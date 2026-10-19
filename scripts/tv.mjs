@@ -67,7 +67,7 @@ const cfg = {
   allowUnpublished: process.argv.includes('--allow-unpublished'),
   sdb: join(tizenHome, 'tools', 'sdb'),
   tizen: join(tizenHome, 'tools', 'ide', 'bin', 'tizen'),
-  profile: env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-dev',
+  profile: env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-tv',
   packageId: env.IPLEX_TIZEN_PACKAGE_ID || 'iPlexTVApp',
   version: env.IPLEX_TIZEN_VERSION || '1.0.0',
   // --target substitui o destino do ambiente nesta execução (ex.: probe no emulador do Hosting).
@@ -538,12 +538,14 @@ async function main() {
   const hash = widgetHash()
   const installedBefore = tvApplist()?.find((app) => app.app_id === appId)
   const state = readState()
+  // A data de instalação informada pela TV detecta reinstalações feitas fora deste script.
   const unchanged =
     !cfg.forceInstall &&
     installedBefore?.app_version === declaredVersion &&
     state?.serial === serial &&
     state?.appId === appId &&
-    state?.hash === hash
+    state?.hash === hash &&
+    state?.installDate === installedBefore?.install_date
   if (unchanged) {
     ok(`versão instalada já corresponde a este build (instalada em ${installedBefore.install_date}); instalação pulada`)
   } else {
@@ -556,7 +558,10 @@ async function main() {
     if (!installed || installed.app_version !== declaredVersion) {
       fail(`Após instalar, ${appId} ${declaredVersion} não aparece na lista de apps da TV.`)
     }
-    writeFileSync(statePath, JSON.stringify({ serial, appId, hash, version: declaredVersion, environment, installedAt: new Date().toISOString() }, null, 2))
+    writeFileSync(
+      statePath,
+      JSON.stringify({ serial, appId, hash, version: declaredVersion, environment, installDate: installed.install_date, installedAt: new Date().toISOString() }, null, 2),
+    )
     ok(`instalado: ${installed.app_title} ${installed.app_version} (${installed.install_date})`)
   }
 

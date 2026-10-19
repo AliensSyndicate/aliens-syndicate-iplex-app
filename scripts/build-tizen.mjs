@@ -163,7 +163,7 @@ if (!shouldPackage) process.exit(0)
 
 const tizenCli = env.TIZEN_CLI || join(homedir(), 'tizen-studio', 'tools', 'ide', 'bin', 'tizen')
 if (!existsSync(tizenCli)) fail(`Tizen CLI não encontrado em ${tizenCli} (defina TIZEN_CLI).`)
-const profile = env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-dev'
+const profile = env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-tv'
 
 rmSync(packageDir, { recursive: true, force: true })
 mkdirSync(packageDir, { recursive: true })

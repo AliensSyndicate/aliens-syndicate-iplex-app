@@ -32,8 +32,8 @@ const candidate = process.argv.includes('--candidate')
 
 const version = env.IPLEX_TIZEN_VERSION || '1.0.0'
 const appName = env.IPLEX_TIZEN_APP_NAME || 'iPlex TV'
-const devProfile = env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-dev'
-const releaseProfile = env.IPLEX_TIZEN_RELEASE_PROFILE || 'iplex-samsung'
+const devProfile = env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-tv'
+const releaseProfile = env.IPLEX_TIZEN_RELEASE_PROFILE || 'iplex-tv'
 const targetUrl = env.VITE_IPLEX_TARGET_URL || ''
 const loadMode = env.VITE_IPLEX_LOAD_MODE === 'navigate' ? 'navigate' : 'frame'
 const tizenCli = env.TIZEN_CLI || join(homedir(), 'tizen-studio', 'tools', 'ide', 'bin', 'tizen')

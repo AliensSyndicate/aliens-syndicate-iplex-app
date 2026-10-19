@@ -41,7 +41,7 @@ Siga [HOSTING.md](HOSTING.md):
 - incluir o manifesto `iplex-web.json` com CORS;
 - **não** enviar `X-Frame-Options` nem CSP `frame-ancestors`.
 
-### 2. Certificado Samsung (perfil `iplex-samsung`)
+### 2. Certificado Samsung (perfil `iplex-tv`, criado em 19/10/2026)
 
 1. Abra o Certificate Manager:
    `~/tizen-studio/tools/certificate-manager/certificate-manager.app`.
@@ -52,8 +52,8 @@ Siga [HOSTING.md](HOSTING.md):
    ```bash
    ~/tizen-studio/tools/sdb -s 192.168.15.8:26101 shell 0 getduid
    ```
-4. Dê ao perfil o nome `iplex-samsung`, ou ajuste
-   `IPLEX_TIZEN_RELEASE_PROFILE` no `.env`.
+4. O perfil se chama `iplex-tv` (já configurado em
+   `IPLEX_TIZEN_RELEASE_PROFILE` no `.env`).
 5. **Faça backup do certificado de autor** (arquivo `.p12` e senha) fora do
    Git. Toda atualização na loja precisa ser assinada com **o mesmo autor**, e
    ele não pode ser recuperado.

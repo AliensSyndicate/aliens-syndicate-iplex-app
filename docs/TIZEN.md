@@ -201,7 +201,7 @@ Com um comando (ou duplo clique em `iPlex-TV.command` no Finder), o script:
 2. Confere se a TV está na rede e se a porta SDB responde.
 3. Inicia o servidor SDB e conecta a TV via Wi-Fi.
 4. Confirma autorização e perfil `tv-samsung`.
-5. Verifica o certificado (perfil `iplex-dev`).
+5. Verifica o certificado (perfil `iplex-tv`).
 6. **Verifica o destino.**
 7. Roda o TypeScript.
 8. Faz o build e gera o WGT assinado.
@@ -236,12 +236,27 @@ npm run tv -- --force-install      # reinstala mesmo sem mudanças
   (`src/devtools/devReport.ts`). Builds de `package:tizen` não enviam nada.
 - **Logs.** Ficam em `build/logs/tv-*.log`. Cada etapa tem tempo limite e as
   tentativas são limitadas.
-- **Certificado.** É o perfil `iplex-dev`, com autor `iplex-dev-author.p12`
-  e distribuidor Tizen padrão. Não é recriado. A senha está no Chaves do
-  macOS (item "iPlex TV - Tizen author certificate"), e o Tizen a guarda
-  cifrada em `profiles.xml`. A TV de testes aceitou esse certificado em Modo
-  Desenvolvedor. Um **certificado Samsung** (Certificate Manager, conta
-  Samsung) será necessário para outras TVs e para a publicação.
+- **Certificado.** Desde 19/10/2026 é o perfil **Samsung `iplex-tv`**
+  (`~/SamsungCertificate/iplex-tv`, fora do Git):
+  - autor `Aliens Syndicate Inc.`, emitido pela Samsung VD Author CA;
+  - distribuidor VD DEVELOPER Public CA Class, com o DUID da TV de testes;
+  - validade até 19/10/2027;
+  - usado no desenvolvimento (`IPLEX_TIZEN_SIGNING_PROFILE`) e na loja
+    (`IPLEX_TIZEN_RELEASE_PROFILE`).
+
+  As senhas ficam cifradas no `profiles.xml` do Tizen e não são pedidas nem
+  exibidas.
+
+  O perfil antigo `iplex-dev` saiu da lista do Tizen quando o Certificate
+  Manager criou o `iplex-tv`. O arquivo `iplex-dev-author.p12` e a senha dele
+  no Chaves continuam guardados.
+
+  **Troca de autor exige desinstalar:** a Tizen não aceita atualizar um app
+  assinado por outro autor. Foi feito uma vez nesta TV, com autorização.
+  Desde então as atualizações com `iplex-tv` funcionam por cima.
+
+  **Guarde backup** do `author.p12` e da senha: toda atualização na loja
+  precisa desse autor.
 
 ### Validação no aparelho físico (Samsung UN65TU7020, Tizen 5.5, Chromium M69)
 
@@ -250,7 +265,8 @@ teste era servida pelo Mac e carregada no shell via iframe.
 
 | Recurso | Resultado na TV |
 |---|---|
-| Instalação/atualização do `.wgt` (perfil `iplex-dev`) | ok |
+| Instalação/atualização do `.wgt` (perfil `iplex-dev`; desde 19/10/2026 `iplex-tv`) | ok |
+| Pacote de loja assinado com o certificado **Samsung** `iplex-tv` | ok: a TV validou as assinaturas e o DUID na instalação; atualização com o mesmo autor por cima, com dados preservados; tela T5 em produção |
 | Shell: verificação do manifesto, iframe, handshake `app.ready` | ok |
 | Ponte `postMessage` (origem, fonte, lista de métodos) | ok: todas as chamadas da sequência atendidas |
 | AVPlay como player nativo (`webapis.avplay`) | ok |
