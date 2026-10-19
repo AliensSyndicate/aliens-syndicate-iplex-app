@@ -11,7 +11,8 @@
     "typecheck": "tsc -b",
     "build:tizen": "tsc -b && node scripts/build-tizen.mjs",
     "package:tizen": "tsc -b && node scripts/build-tizen.mjs --package",
-    "tv": "node scripts/tv.mjs"
+    "tv": "node scripts/tv.mjs",
+    "release:tizen": "node scripts/release-tizen.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

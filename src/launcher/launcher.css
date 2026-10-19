@@ -89,6 +89,13 @@
   word-break: break-word;
 }
 
+.launcher-code {
+  margin: 0.8vw 0 0;
+  color: var(--iplex-text-disabled);
+  font-size: 1vw;
+  word-break: break-word;
+}
+
 .launcher[data-phase='failed'] .launcher-title {
   color: #e8a19b;
 }
@@ -118,4 +125,8 @@
   justify-content: space-between;
   color: var(--iplex-text-disabled);
   font-size: 1vw;
+}
+
+.launcher-details.is-production {
+  justify-content: center;
 }

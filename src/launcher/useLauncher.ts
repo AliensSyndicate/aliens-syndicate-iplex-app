@@ -58,7 +58,61 @@ function loadConfig(): LauncherConfig | LaunchConfigError {
 
 const config = loadConfig()
 
+/**
+ * Somente desenvolvimento: `launcher.html?screen=<id>` exibe uma tela do shell
+ * sem verificar a rede (para criação de layout). Removido do build de produção.
+ */
+export const PREVIEW_SCREENS = [
+  'checking',
+  'loading',
+  'offline',
+  'unreachable',
+  'not-deployed',
+  'server-error',
+  'incompatible',
+  'load-timeout',
+  'config',
+  'returned',
+  'offline-banner',
+] as const
+
+function previewState(): { state: LauncherState; online: boolean } | null {
+  if (!import.meta.env.DEV) return null
+  const screen = new URLSearchParams(window.location.search).get('screen')
+  const url = config instanceof LaunchConfigError ? 'https://alienssyndicate.com/apps/iplex/' : config.target.url
+  const failed = (failure: LaunchFailure): LauncherState => ({ phase: 'failed', failure })
+  switch (screen) {
+    case 'checking':
+      return { state: { phase: 'checking' }, online: true }
+    case 'loading':
+      return { state: { phase: 'opening', url }, online: true }
+    case 'offline':
+      return { state: failed({ kind: 'offline' }), online: false }
+    case 'unreachable':
+      return { state: failed({ kind: 'unreachable', detail: 'tempo esgotado' }), online: true }
+    case 'not-deployed':
+      return { state: failed({ kind: 'not-deployed', detail: `${url}iplex-web.json respondeu HTTP 404` }), online: true }
+    case 'server-error':
+      return { state: failed({ kind: 'server-error', httpStatus: 503 }), online: true }
+    case 'incompatible':
+      return { state: failed({ kind: 'incompatible', detail: 'iPlex Web 2.0.0 usa a ponte v2; este app usa v1' }), online: true }
+    case 'load-timeout':
+      return { state: failed({ kind: 'load-timeout' }), online: true }
+    case 'config':
+      return { state: failed({ kind: 'config', message: 'VITE_IPLEX_TARGET_URL não está definida para este ambiente.' }), online: true }
+    case 'returned':
+      return { state: { phase: 'returned', url }, online: true }
+    case 'offline-banner':
+      return { state: { phase: 'running', url: 'about:blank', frontendVersion: null }, online: false }
+    default:
+      return null
+  }
+}
+
+const preview = previewState()
+
 function initialState(): LauncherState {
+  if (preview) return preview.state
   if (config instanceof LaunchConfigError) {
     return { phase: 'failed', failure: { kind: 'config', message: config.message } }
   }
@@ -70,11 +124,11 @@ const RETRY_ON_RECONNECT: LaunchFailure['kind'][] = ['offline', 'unreachable', '
 
 export function useLauncher() {
   const [state, setState] = useState<LauncherState>(initialState)
-  const [request, setRequest] = useState<number | null>(() => (state.phase === 'checking' ? 0 : null))
-  const [online, setOnline] = useState(() => navigator.onLine !== false)
+  const [request, setRequest] = useState<number | null>(() => (!preview && state.phase === 'checking' ? 0 : null))
+  const [online, setOnline] = useState(() => (preview ? preview.online : navigator.onLine !== false))
 
   useEffect(() => {
-    if (config instanceof LaunchConfigError) logLaunchEvent('config-error', config.message)
+    if (!preview && config instanceof LaunchConfigError) logLaunchEvent('config-error', config.message)
   }, [])
 
   // Verificação de rede e disponibilidade, seguida da abertura do destino.
@@ -125,7 +179,7 @@ export function useLauncher() {
 
   // Tempo limite de carregamento: app.ready (frame) ou descarregamento do shell (navigate).
   useEffect(() => {
-    if ((state.phase !== 'loading' && state.phase !== 'opening') || config instanceof LaunchConfigError) return
+    if (preview || (state.phase !== 'loading' && state.phase !== 'opening') || config instanceof LaunchConfigError) return
     const timer = window.setTimeout(() => {
       logLaunchEvent('load-timeout', state.url)
       writeOpened(null)
@@ -166,10 +220,10 @@ export function useLauncher() {
   }
 
   // Estado da rede para o aviso exibido durante a execução.
-  useEffect(() => subscribeNetworkChanges(setOnline), [])
+  useEffect(() => (preview ? undefined : subscribeNetworkChanges(setOnline)), [])
 
   // Falha de rede/servidor: tenta novamente quando a conexão voltar.
-  const waitingForNetwork = state.phase === 'failed' && RETRY_ON_RECONNECT.includes(state.failure.kind)
+  const waitingForNetwork = !preview && state.phase === 'failed' && RETRY_ON_RECONNECT.includes(state.failure.kind)
   useEffect(() => {
     if (!waitingForNetwork) return
     return subscribeNetworkChanges((isOnline) => {

@@ -7,7 +7,10 @@
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="http://alienssyndicate/IplexTV" version="{{VERSION}}" viewmodes="maximized">
     <tizen:application id="{{PACKAGE_ID}}.IplexTV" package="{{PACKAGE_ID}}" required_version="4.0"/>
     <tizen:profile name="tv-samsung"/>
-    <name>iPlex TV</name>
+    <!-- Tamanho de tela: exigido pelo Launch Checklist da Samsung (igual ao exemplo oficial da TV Extension). -->
+    <feature name="http://tizen.org/feature/screen.size.normal.1080.1920"/>
+    <!-- Deve ser idêntico ao título no idioma padrão do Seller Office. -->
+    <name>{{APP_NAME}}</name>
     <icon src="icon.png"/>
     <content src="launcher.html"/>
 

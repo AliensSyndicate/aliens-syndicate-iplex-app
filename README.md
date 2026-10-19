@@ -55,6 +55,7 @@ Pré-requisitos no Mac:
 | `npm run build` | build web (sanidade) |
 | `npm run build:tizen` | widget Tizen de produção em `dist-tizen/widget` |
 | `npm run package:tizen` | widget + `.wgt` assinado em `build/tizen/` |
+| `npm run release:tizen` | verifica todos os requisitos da loja e gera o pacote de publicação em `build/release/` (`-- --candidate` gera um candidato de teste) |
 
 Para os dois últimos, acrescente `-- --env development` para usar o
 ambiente de desenvolvimento.
@@ -67,9 +68,20 @@ ambiente de desenvolvimento.
 | `.env.development` | página de teste controlada (independente da produção) |
 | `.env` | valores comuns (tempos limite, Tizen, TV de desenvolvimento) |
 
+## Telas para o layout
+
+`npm run dev` → `http://localhost:5173/launcher.html?screen=<id>` mostra cada
+tela do app sem depender da rede. Os ids são `checking`, `loading`,
+`offline`, `unreachable`, `not-deployed`, `server-error`, `incompatible`,
+`load-timeout` e `offline-banner`. Veja [docs/MAPA-DE-TELAS.md](docs/MAPA-DE-TELAS.md).
+
 ## Documentação
 
 - [docs/TIZEN.md](docs/TIZEN.md): arquitetura, ponte, AVPlay, restrições
   da Samsung e automação da TV.
 - [docs/IPLEX-WEB.md](docs/IPLEX-WEB.md): requisitos para o iPlex Web
   funcionar em `/apps/iplex/`.
+- [docs/MAPA-DE-TELAS.md](docs/MAPA-DE-TELAS.md): todas as telas e funções
+  do app (App × Web), para o layout.
+- [docs/PUBLICACAO.md](docs/PUBLICACAO.md): o que está pronto e o que falta
+  para publicar na Samsung.

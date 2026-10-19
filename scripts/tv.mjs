@@ -4,6 +4,7 @@
  *
  *   npm run tv                      (ou duplo clique em iPlex-TV.command)
  *   npm run tv -- --env production  (destino de produção, verificado antes)
+ *   npm run tv -- --env production --allow-unpublished  (valida a tela "indisponível")
  *   npm run tv -- --host 192.168.0.50 [--port 26101] [--force-install] [--watch 60]
  *
  * Etapas: ferramentas → TV na rede → servidor SDB → conexão → autorização →
@@ -32,6 +33,7 @@ import { homedir, networkInterfaces } from 'node:os'
 import { dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadEnv } from 'vite'
+import { readBridgeVersion, verifyWebTarget } from './lib/web-target.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -61,6 +63,7 @@ const cfg = {
   validateTimeoutMs: positiveInt(env.IPLEX_TV_VALIDATE_TIMEOUT_MS, 60000),
   watchSeconds: positiveInt(argValue('--watch'), 0),
   forceInstall: process.argv.includes('--force-install'),
+  allowUnpublished: process.argv.includes('--allow-unpublished'),
   sdb: join(tizenHome, 'tools', 'sdb'),
   tizen: join(tizenHome, 'tools', 'ide', 'bin', 'tizen'),
   profile: env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-dev',
@@ -316,71 +319,25 @@ function startDevServer(tvHost) {
   })
 }
 
-// ---- Verificação do iPlex Web hospedado ---------------------------------------
+// ---- Verificação do iPlex Web hospedado (scripts/lib/web-target.mjs) ---------
 
-const BRIDGE_VERSION = Number(
-  readFileSync(join(root, 'src', 'bridge', 'protocol.ts'), 'utf8').match(/BRIDGE_VERSION = (\d+)/)?.[1],
-)
-const TV_USER_AGENT = 'Mozilla/5.0 (SMART-TV; LINUX; Tizen 5.5) AppleWebKit/537.36 (KHTML, like Gecko) 69.0.3497.106/5.5 TV Safari/537.36'
+const BRIDGE_VERSION = readBridgeVersion(root)
 
-/** Mesma regra do app: destino de diretório termina com "/". */
-function directoryUrl(raw) {
-  const url = new URL(raw)
-  const last = url.pathname.split('/').pop() ?? ''
-  if (!url.pathname.endsWith('/') && !last.includes('.')) url.pathname = `${url.pathname}/`
-  return url
-}
-
-async function fetchChecked(url) {
-  try {
-    return await fetch(url, { headers: { 'User-Agent': TV_USER_AGENT }, signal: AbortSignal.timeout(15000), redirect: 'follow' })
-  } catch (error) {
-    fail(`Servidor do iPlex Web inacessível: ${url}`, error.cause?.message ?? error.message)
-  }
-}
-
-/** Não presume que o destino está publicado: confere manifesto, CORS e embutimento. */
-async function verifyWebTarget(raw) {
-  const base = directoryUrl(raw)
-  const manifestUrl = new URL('iplex-web.json', base)
-  const manifestResponse = await fetchChecked(manifestUrl)
-  const contentType = manifestResponse.headers.get('content-type') ?? '?'
-  const text = await manifestResponse.text()
-  let manifest = null
-  try {
-    manifest = JSON.parse(text)
-  } catch {
-    manifest = null
-  }
-  if (!manifestResponse.ok || manifest?.app !== 'iplex-web') {
-    const title = text.match(/<title>([^<]*)<\/title>/i)?.[1]
+/** Falha se o iPlex Web não estiver pronto; com --allow-unpublished apenas avisa. */
+async function requireWebTarget(raw) {
+  const result = await verifyWebTarget(raw, { loadMode: cfg.loadMode, bridgeVersion: BRIDGE_VERSION })
+  result.warnings.forEach((message) => warn(message))
+  if (!result.ok) {
+    if (cfg.allowUnpublished) {
+      result.problems.forEach((message) => warn(message))
+      return result
+    }
     fail(
-      `O iPlex Web não está publicado em ${base.href}`,
-      `${manifestUrl.href} → HTTP ${manifestResponse.status}, ${contentType}${title ? `, página "${title}"` : ''}.\n` +
-        'Publique o iPlex Web com o manifesto (docs/IPLEX-WEB.md) ou teste com o ambiente development.',
+      result.problems[0],
+      [...result.problems.slice(1), 'Publique o iPlex Web (docs/IPLEX-WEB.md), teste com --env development ou use --allow-unpublished para validar a tela de indisponibilidade.'].join('\n'),
     )
   }
-  if (manifestResponse.headers.get('access-control-allow-origin') !== '*') {
-    fail(`${manifestUrl.href} sem "Access-Control-Allow-Origin: *": o app na TV não consegue verificá-lo.`)
-  }
-  if (manifest.bridgeVersion !== BRIDGE_VERSION) {
-    fail(`iPlex Web ${manifest.version} usa a ponte v${manifest.bridgeVersion}; este app usa v${BRIDGE_VERSION}.`)
-  }
-  if (cfg.loadMode === 'frame') {
-    const page = await fetchChecked(base)
-    const frameOptions = page.headers.get('x-frame-options')
-    const frameAncestors = page.headers.get('content-security-policy')?.match(/frame-ancestors([^;]*)/i)?.[1]?.trim()
-    if (frameOptions) {
-      fail(
-        `${base.href} envia "X-Frame-Options: ${frameOptions}" e não pode ser exibido dentro do app (modo frame).`,
-        'Remova o cabeçalho para /apps/iplex/** (docs/IPLEX-WEB.md).',
-      )
-    }
-    if (frameAncestors && frameAncestors !== '*') {
-      warn(`CSP frame-ancestors "${frameAncestors}" pode impedir o app de exibir o iPlex Web.`)
-    }
-  }
-  return { base, manifest }
+  return result
 }
 
 // ---- Fluxo -------------------------------------------------------------------
@@ -515,6 +472,7 @@ async function main() {
   // Página de teste servida pelo Mac: desenvolvimento sem URL remota própria.
   const servesTestPage = environment === 'development' && !remoteTarget
   let expectTestPage = servesTestPage
+  let expectUnavailable = false
   if (servesTestPage) {
     Object.assign(buildEnv, {
       VITE_IPLEX_TARGET_URL: `${devServerOrigin}/index.html`,
@@ -522,9 +480,14 @@ async function main() {
     })
     ok(`página de teste controlada servida por este Mac: ${devServerOrigin}/index.html`)
   } else if (remoteTarget) {
-    const { base, manifest } = await verifyWebTarget(cfg.target)
-    expectTestPage = manifest.version === 'test-page'
-    ok(`iPlex Web publicado em ${base.href} (versão ${manifest.version}, ponte v${manifest.bridgeVersion})`)
+    const { base, manifest, ok: published } = await requireWebTarget(cfg.target)
+    if (published) {
+      expectTestPage = manifest.version === 'test-page'
+      ok(`iPlex Web publicado em ${base.href} (versão ${manifest.version}, ponte v${manifest.bridgeVersion})`)
+    } else {
+      expectUnavailable = true
+      warn(`--allow-unpublished: o app será instalado e deve mostrar a tela "iPlex indisponível" (${base.href})`)
+    }
   } else if (cfg.target) {
     ok(`conteúdo empacotado no widget: ${cfg.target}`)
   } else {
@@ -621,6 +584,9 @@ async function main() {
       if (event.event === 'launcher-start') started = event
       if (event.event === 'navigate') navigateTo = event.detail
       if (event.event === 'frame-ready') ready = event
+      if (expectUnavailable && ['not-deployed', 'unreachable', 'server-error', 'load-timeout'].includes(event.event)) {
+        return finish({ status: 'unavailable-screen', started, event })
+      }
       if (FAILURES.includes(event.event)) return finish({ status: 'failed', started, event })
       if (cfg.loadMode === 'navigate' && event.event === 'launcher-pagehide' && navigateTo) {
         return finish({ status: 'navigated', started, url: navigateTo })
@@ -644,7 +610,9 @@ async function main() {
     await devServer.close()
     fail(`A TV reportou falha: ${outcome.event.event}${outcome.event.detail ? ` — ${outcome.event.detail}` : ''}`)
   }
-  if (outcome.status === 'navigated') {
+  if (outcome.status === 'unavailable-screen') {
+    ok(`tela de indisponibilidade exibida na TV (${outcome.event.event}${outcome.event.detail ? `: ${outcome.event.detail}` : ''})`)
+  } else if (outcome.status === 'navigated') {
     ok(`navegação de nível superior concluída na TV (shell descarregado): ${outcome.url}`)
     info('modo navigate: a página remota não tem ponte nem envia relatórios.')
   } else {

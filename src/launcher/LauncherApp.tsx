@@ -9,47 +9,72 @@ import './launcher.css'
 
 const platform = getPlatform()
 
-function describeFailure(failure: LaunchFailure): { title: string; message: string } {
+interface FailureText {
+  title: string
+  /** Mensagem para o usuário final. */
+  message: string
+  /** Código curto para suporte (exibido em produção). */
+  code: string
+  /** Detalhe técnico (exibido só em desenvolvimento). */
+  detail: string
+}
+
+function describeFailure(failure: LaunchFailure): FailureText {
   switch (failure.kind) {
     case 'config':
-      return { title: 'Configuração inválida', message: failure.message }
+      return { title: 'Configuração inválida', message: 'O aplicativo não está configurado corretamente.', code: 'E-CONFIG', detail: failure.message }
     case 'offline':
       return {
         title: 'Sem conexão com a internet',
-        message: 'Verifique a rede da TV. O iPlex tentará novamente quando a conexão voltar.',
+        message: 'Verifique a conexão da TV. O iPlex tentará novamente quando a conexão voltar.',
+        code: 'E-OFFLINE',
+        detail: 'navigator.onLine = false',
       }
     case 'unreachable':
       return {
         title: 'Servidor do iPlex indisponível',
-        message: `O servidor não respondeu (${failure.detail}). Tente novamente em instantes.`,
+        message: 'Não foi possível falar com o servidor do iPlex. Tente novamente em instantes.',
+        code: 'E-UNREACHABLE',
+        detail: failure.detail,
       }
     case 'not-deployed':
       return {
         title: 'iPlex indisponível no momento',
-        message: `O serviço respondeu, mas o iPlex Web não foi encontrado. ${failure.detail}`,
+        message: 'O iPlex está temporariamente fora do ar. Tente novamente mais tarde.',
+        code: 'E-NOT-DEPLOYED',
+        detail: failure.detail,
       }
     case 'server-error':
       return {
         title: 'Servidor do iPlex com falha',
-        message: `O servidor respondeu com erro (HTTP ${failure.httpStatus}). Tente novamente em instantes.`,
+        message: 'O servidor do iPlex está com problemas. Tente novamente em instantes.',
+        code: `E-SERVER-${failure.httpStatus}`,
+        detail: `HTTP ${failure.httpStatus}`,
       }
     case 'incompatible':
-      return { title: 'Atualização necessária', message: failure.detail }
+      return {
+        title: 'Atualização necessária',
+        message: 'Atualize o aplicativo iPlex pela loja da TV para continuar.',
+        code: 'E-BRIDGE-VERSION',
+        detail: failure.detail,
+      }
     case 'load-timeout':
       return {
         title: 'O iPlex não terminou de carregar',
-        message: 'A interface não respondeu a tempo. A rede pode estar lenta ou o serviço pode estar instável.',
+        message: 'O carregamento demorou demais. Verifique a conexão e tente novamente.',
+        code: 'E-LOAD-TIMEOUT',
+        detail: 'sem app.ready no tempo limite',
       }
   }
 }
 
-function statusFor(state: LauncherState): { title: string; message: string; busy: boolean } {
+function statusFor(state: LauncherState): { title: string; message: string; busy: boolean; failure?: FailureText } {
   switch (state.phase) {
     case 'checking':
       return { title: 'Conectando ao iPlex…', message: 'Verificando a conexão e o serviço.', busy: true }
     case 'loading':
     case 'opening':
-      return { title: 'Carregando o iPlex…', message: state.url, busy: true }
+      return { title: 'Carregando o iPlex…', message: 'Só um instante.', busy: true }
     case 'running':
       return { title: '', message: '', busy: false }
     case 'returned':
@@ -58,8 +83,10 @@ function statusFor(state: LauncherState): { title: string; message: string; busy
         message: `Conteúdo remoto encerrado: ${state.url}`,
         busy: false,
       }
-    case 'failed':
-      return { ...describeFailure(state.failure), busy: false }
+    case 'failed': {
+      const failure = describeFailure(state.failure)
+      return { title: failure.title, message: failure.message, busy: false, failure }
+    }
   }
 }
 
@@ -121,17 +148,32 @@ export function LauncherApp() {
             {status.busy && <div className="launcher-spinner" aria-hidden="true" />}
             <h1 className="launcher-title">{status.title}</h1>
             <p className="launcher-message">{status.message}</p>
+            {status.failure && (
+              <p className="launcher-code">
+                {config?.environment === 'production'
+                  ? `Código: ${status.failure.code}`
+                  : `${status.failure.code} · ${status.failure.detail}`}
+              </p>
+            )}
             {actions.length > 0 && <ActionBar key={state.phase} actions={actions} />}
           </section>
 
-          <footer className="launcher-details">
-            <span>Ambiente: {config ? config.environment : '—'}</span>
-            <span>Destino: {config ? config.target.url : '—'}</span>
-            <span>
-              Plataforma: {platform.label}
-              {platform.platformVersion ? ` ${platform.platformVersion}` : ''}
-            </span>
-          </footer>
+          {config?.environment === 'production' ? (
+            <footer className="launcher-details is-production">
+              <span>
+                {__IPLEX_APP_NAME__} · versão {__IPLEX_APP_VERSION__}
+              </span>
+            </footer>
+          ) : (
+            <footer className="launcher-details">
+              <span>Ambiente: {config ? config.environment : '—'}</span>
+              <span>Destino: {config ? config.target.url : '—'}</span>
+              <span>
+                Plataforma: {platform.label}
+                {platform.platformVersion ? ` ${platform.platformVersion}` : ''}
+              </span>
+            </footer>
+          )}
         </div>
       )}
 

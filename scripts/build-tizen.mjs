@@ -49,6 +49,10 @@ if (
   fail(`IPLEX_TIZEN_VERSION inválida (${version}); use x.y.z com x,y <= 255 e z <= 65535.`)
 }
 
+// Título exibido na TV; precisa ser igual ao título padrão no Seller Office.
+const appName = (env.IPLEX_TIZEN_APP_NAME || 'iPlex TV').trim()
+if (!appName || appName.length > 50 || /[<>&"]/.test(appName)) fail(`IPLEX_TIZEN_APP_NAME inválido: "${appName}"`)
+
 // Identificador já instalado na TV: alterá-lo cria outro app (sem atualização).
 const packageId = env.IPLEX_TIZEN_PACKAGE_ID || 'iPlexTVApp'
 if (!/^[0-9a-zA-Z]{10}$/.test(packageId)) {
@@ -133,6 +137,7 @@ for (const page of pages) {
 const template = readFileSync(join(root, 'tizen', 'config.template.xml'), 'utf8')
 const configXml = template
   .replace('{{VERSION}}', version)
+  .replace('{{APP_NAME}}', appName)
   .replaceAll('{{PACKAGE_ID}}', packageId)
   .replace('{{ACCESS}}', accessXml)
   .replace('{{ALLOW_NAVIGATION}}', allowNavigationXml)

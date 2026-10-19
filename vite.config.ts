@@ -35,7 +35,10 @@ function tizenHtml(page: string): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, root, 'IPLEX_')
   const plugins = [react(), babel({ presets: [reactCompilerPreset()] })]
-  const define = { __IPLEX_APP_VERSION__: JSON.stringify(env.IPLEX_TIZEN_VERSION || '0.0.0') }
+  const define = {
+    __IPLEX_APP_VERSION__: JSON.stringify(env.IPLEX_TIZEN_VERSION || '0.0.0'),
+    __IPLEX_APP_NAME__: JSON.stringify(env.IPLEX_TIZEN_APP_NAME || 'iPlex TV'),
+  }
 
   const tizenPage = process.env.IPLEX_TIZEN_PAGE
   if (!tizenPage) {
