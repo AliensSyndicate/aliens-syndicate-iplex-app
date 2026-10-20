@@ -53,10 +53,12 @@ recursos da TV. A arquitetura oficial está em [docs/ARQUITETURA.md](docs/ARQUIT
 - Botões (`IplexButton`, `primary`/`secondary`) têm **só texto**, nunca
   ícone.
 - Ícones: somente Hugeicons Stroke Rounded (`@hugeicons/core-free-icons`).
-- Logo: `IplexLogo`, texto branco (`#FFFFFF`) sem relevo, com brilho
-  vertical suave. As cores `--iplex-logo-*` só podem ser usadas no logo.
-  Nunca use `-webkit-text-stroke` com a Google Sans, porque ele desenha os
-  contornos internos dos glifos.
+- Logo: `IplexLogo`, texto branco sólido (`#FFFFFF`), sem brilho, reflexo,
+  relevo, contorno ou sombra (igual ao iPlex Web). Nunca use
+  `-webkit-text-stroke` com a Google Sans (desenha os contornos internos).
+- Fonte: `src/design-system/fonts.css` (`font-display: block`, arquivos locais
+  do widget). Os tamanhos de TV são a escala única do iPlex na referência
+  1920×1080 (mesmos valores do iPlex Web).
 - Foco sempre visível: anel em `box-shadow` (via `:focus` ou
   `.is-focused`). Na TV não há dependência de *hover*.
 

@@ -44,7 +44,7 @@ exemplo, `#fff` no lugar de `#FFFFFF`).
   `vite.config.ts`). O minificador reescrevia
   `0.0509803922` → `0.05` e `#FFFFFF` → `#fff`.
 
-**Tokens derivados (sem cores novas, exceto o brilho do logo — seção 2):**
+**Tokens derivados (sem cores novas):**
 
 - Tipografia: tamanhos `display/title/body/caption`, pesos 400/500/700 e
   altura de linha.
@@ -133,205 +133,17 @@ ficava apagada e sem nitidez na TV, e um relevo neumórfico em CSS foi
 testado e descartado. O texto em CSS é vetorial, nítido em qualquer
 tamanho, e não pesa no pacote.
 
-- **Brilho:** uma camada `::after` com gradiente vertical recortado no
-  texto (`-webkit-background-clip: text`). O topo fica branco e a base um
-  pouco mais escura. A camada fica dentro de `@supports`: se o motor não
-  suportar o recorte, ela não aparece e o logo fica branco liso.
-- **Cores:** tokens `--iplex-logo-*`, usados só no logo (um teste garante
-  isso). No resto do Design System continua valendo "só cores oficiais, sem
-  gradiente".
-  - Cor: `#FFFFFF`, o branco oficial.
-  - Brilho no topo: `#F1F1F1` translúcido.
-  - Sombreado na base: preto translúcido.
-- **Sem `text-shadow` e sem `-webkit-text-stroke`:** um teste garante isso.
-  Além de não fazerem parte do visual, o traço desenha os contornos
-  sobrepostos dos glifos da Google Sans (um retângulo dentro do "P", a
-  barra do "e").
-- **Arte original:** continua no ícone da loja (`tizen/icon.png`), que
-  precisa ser imagem.
-
-## 3. Foco e navegação
-
-O foco nunca é invisível. O anel é um `box-shadow` duplo:
-
-- um vão na cor do fundo (`#0F0F0F`);
-- um traço claro (`#F1F1F1`).
-
-Ele aparece tanto sobre o fundo escuro quanto sobre o botão branco.
-Usamos `box-shadow` porque ele acompanha o raio 9999px em qualquer motor.
-O `outline` só passou a acompanhar o raio no Chromium 94.
-
-### TV (controle remoto)
-
-- O foco vem de `:focus` (foco real do DOM) ou da classe `.is-focused`
-  (prop `focused`), para quem controla a navegação por estado.
-- Sem dependência de *hover*: o *hover* fica desligado quando
-  `data-iplex-platform="tv"`.
-- **Shell:** setas e OK pelo `ActionBar` (`src/navigation/`).
-- **Vitrine:** navegação espacial (setas para o vizinho mais próximo na
-  direção). OK aciona e Return encerra pela ponte.
-
-### Web
-
-- Tab e Enter são nativos. As setas também funcionam na vitrine.
-- O *hover* só existe com ponteiro real (`@media (hover: hover)`). Ele usa
-  apenas cores oficiais: o botão passa de `#FFFFFF` a `#F1F1F1`.
-- Com o mouse, o anel some (`:focus:not(:focus-visible)`). Pelo teclado, o
-  anel aparece.
-  - Essa regra fica **isolada**: em motores sem `:focus-visible` ela é
-    descartada inteira e o anel continua aparecendo.
-  - O teste garante que nenhum seletor válido é misturado com
-    `:focus-visible`.
-- No alto contraste do sistema (`forced-colors`), o foco vira `outline`.
-- Os estados ativo (escala 0,97) e desabilitado (opacidade 0,4,
-  `cursor: not-allowed`) são iguais nas duas plataformas.
-
-## 4. Compatibilidade (Tizen 4.0 / Chromium M56 em diante)
-
-- Usa apenas recursos do M56:
-  - custom properties (M49);
-  - `width: fit-content` (sem prefixo desde o M46; o CSS-fonte também
-    declara `-webkit-fit-content`);
-  - flex sem prefixo;
-  - `box-shadow`, `calc()`;
-  - `@font-face` com woff2 e woff.
-- Não usa:
-  - `gap` em flexbox (M84): o espaçamento é por margens;
-  - `inset` (M87);
-  - `aspect-ratio` (M88);
-  - `:focus-visible` (M86), exceto isolado, como refinamento.
-
-  O teste `designSystem.test.ts` verifica os três primeiros e o isolamento
-  de `:focus-visible`.
-- O bundle de TV é ES2017 válido. A análise foi feita com `acorn`, em modo
-  ES2017, sobre `dist-tizen/widget/assets/*.js`.
-- **Desempenho em 1920×1080:**
-  - sem bibliotecas de UI;
-  - o CSS do Design System tem ~13 KB sem minificar;
-  - fontes: 3 pesos de ~22 KB cada (woff2), só o subconjunto latin;
-  - os ícones entram no bundle só quando usados (o shell de produção não
-    usa ícones).
-
-## 5. Fonte: Google Sans
-
-| Item | Situação |
-|---|---|
-| Licença | **SIL Open Font License 1.1** (`google/fonts`, pasta `ofl/googlesans`). Pode ser embutida e redistribuída no app, inclusive comercial |
-| Origem | Pacote npm `@fontsource/google-sans` 5.3.2 (OFL-1.1), que reempacota os arquivos do Google Fonts. Nada foi baixado de fonte não autorizada |
-| Arquivos | Subconjunto **latin** (cobre o português), pesos estáticos **400, 500 e 700**. Fontes variáveis exigem Chromium 62+, e as TVs de 2018 têm o M56 |
-| Licença no pacote | O build copia o texto da OFL para `licenses/google-sans-OFL.txt` no widget. Os arquivos de fonte trazem só o copyright e o link da licença |
-| Marca | "Google Sans" é marca do Google. Não use o nome no nome do produto nem sugira afiliação ao Google. O uso da fonte é livre |
-| Verificado na TV | Os pesos 400, 500 e 700 carregam (`document.fonts`) no Tizen 5.5 |
-
-Não foi preciso propor substituta. Se um dia for, as alternativas
-geométricas mais próximas e também OFL são **Outfit** e **Figtree**.
-Product Sans não serve: não é livre. A troca exige aprovação antes.
-
-## 6. Ícones: Hugeicons Stroke Rounded
-
-- Pacotes:
-  - `@hugeicons/react` 1.1.10 (componente `HugeiconsIcon`);
-  - `@hugeicons/core-free-icons` 4.3.5 (dados dos ícones).
-
-  Ambos com **licença MIT**.
-- O conjunto gratuito é o **Stroke Rounded**, o único permitido. Os outros
-  estilos (Solid, Duotone…) são pagos e não estão instalados.
-- Traço 1.5 (no viewBox 24) com cantos arredondados. O traço escala com o
-  ícone.
-- Use ícones em cards, listas e indicadores. **Nunca dentro de botões.**
-- O runtime do `HugeiconsIcon` não usa APIs posteriores ao M56. O build
-  converte a sintaxe para ES2017.
-
-## 7. Telas do shell (T1–T9)
-
-As telas técnicas do shell usam o Design System e o layout da referência.
-As imagens estão em [MAPA-DE-TELAS.md](MAPA-DE-TELAS.md).
-
-- **O que mudou (só apresentação):**
-  - fundo;
-  - logo em CSS (texto branco), centralizado, no lugar da marca
-    tipográfica;
-  - tipografia Google Sans;
-  - botões `IplexButton`: "Tentar novamente" e "Abrir novamente" como
-    primários, "Sair" como secundário;
-  - cores oficiais. O título de erro em vermelho, o foco azul e os
-    gradientes foram removidos.
-- **O que não mudou:**
-  - estados e textos;
-  - códigos de erro;
-  - ações (Tentar novamente / Sair / Abrir novamente);
-  - teclas;
-  - ponte, player, Hosting e assinatura.
-
-A página de teste (`index.html`, só desenvolvimento) usa a mesma base, mas
-mantém as cores de diagnóstico próprias (ok/erro), definidas só nela.
-
-## 8. Vitrine e validação
-
-```bash
-npm run dev
-```
-
-Abra `http://localhost:5173/design-system.html`. Para ver a escala de TV
-no navegador, acrescente `?platform=tv`.
-
-```bash
-npm run tv -- --page design-system.html
-```
-
-Instala na TV e roda as verificações no aparelho.
-
-A vitrine mostra:
-
-- os 6 botões primários de exemplo, 3 secundários e um desabilitado de
-  cada variante;
-- cards (interativos, selecionado e estático);
-- tipografia e cores;
-- ícones.
-
-Ela também roda **11 verificações no motor real** e envia o resultado ao
-Mac (`npm run tv`). A vitrine só entra no pacote de desenvolvimento.
-`release:tizen` recusa um pacote que contenha `design-system.html`.
-
-**Resultado na TV** (Samsung UN65TU7020, Tizen 5.5, Chromium 69): **12/12
-ok** (11 verificações e o handshake).
-
-| Verificação | Resultado no aparelho |
-|---|---|
-| Tokens oficiais | 9/9. O motor relê o alfa como `0.0509804` (serialização com 6 dígitos); o arquivo tem o valor exato |
-| Fundo | `rgb(15, 15, 15)` |
-| `fit-content` | Nativo. Cada botão tem a largura do texto + padding (11 botões, de 137px a 241px) |
-| Botão primário | `#FFFFFF` / `#0F0F0F`, raio 9999px, borda 0 |
-| Botão secundário | Fundo transparente, texto e borda de 2px `#F1F1F1`, altura 64/64px (igual ao primário) |
-| Só texto | 11 botões, 0 ícones, 0 elementos filhos |
-| Card | `rgba(241, 243, 244, 0.05…)`, raio 48px, sem sombra |
-| Google Sans | 400, 500 e 700 carregados |
-| Foco | Por estado e foco real: `rgb(15,15,15) 0 0 0 6px, rgb(241,241,241) 0 0 0 10px` |
-| Ícones | 10 ícones, traço 1.5, 40px |
-| Logo em CSS | Branco `rgb(255, 255, 255)`, sem sombra, brilho ativo (`-webkit-background-clip: text`), Google Sans 700 carregada, 78px |
-
-**No navegador (Web, Chrome):**
-
-- 11/11 verificações;
-- teclado e mouse reais: o clique aciona sem anel; o Tab mostra o anel; a
-  seta move o foco para o vizinho; o Enter aciona.
-
-**Shell de produção:** com as telas novas, foi instalado na TV e exibiu a
-T5 ("iPlex indisponível", porque o Web ainda não está publicado). Ao fim
-da validação, a TV ficou com esse shell de produção.
-
-## 9. Limitações e pendências
-
-- **Navegação pelo controle na vitrine:** o código foi testado
-  (navegação espacial com testes unitários) e o foco foi verificado no
-  aparelho. Falta a validação com o controle físico na mão (`--watch`).
-- **Telas T1–T9 na TV:** a T5 apareceu no aparelho. As demais foram
-  conferidas no navegador em 1920×1080 (mesmo CSS).
+- **Sem efeitos (20/10/2026):** o brilho vertical (`::after` com gradiente
+  recortado) foi removido. Pelo Design System do iPlex, o logo é branco
+  sólido, sem brilho, reflexo, relevo, contorno ou sombra — idêntico ao do
+  iPlex Web. Um teste impede a volta de gradiente, recorte ou `::after`.
+- **Cor:** token `--iplex-logo-color: #FFFFFF` (o branco oficial).
 - **Distribuição ao iPlex Web:** decidir entre copiar a pasta ou publicar
   um pacote privado.
-- **Logo em CSS:** depende da Google Sans 700. Até a fonte carregar
-  (`font-display: swap`), o logo aparece na fonte de reserva. No app as
-  fontes são locais, então a troca é imediata.
+- **Fonte sem troca visual:** `src/design-system/fonts.css` declara a Google
+  Sans com `font-display: block` (antes: `swap` do CSS do @fontsource, que
+  mostrava a fonte de reserva por um instante). Os arquivos são locais no
+  widget, então o bloqueio dura só a leitura do disco.
 - **Avisos de terceiros:** React e Hugeicons são MIT. O Hugeicons não entra
   no pacote de produção. Para a loja, convém um arquivo de avisos de
   terceiros cobrindo o React, como já é feito para a Google Sans.

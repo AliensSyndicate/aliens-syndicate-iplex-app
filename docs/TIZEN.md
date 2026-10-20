@@ -319,6 +319,26 @@ bloquear o fluxo. Para esclarecê-las seria preciso:
 - **Emulador.** O emulador de TV exige Intel VT-x e não roda em Apple
   Silicon.
 
+### Integração Control ↔ Web ↔ App na Samsung (20/10/2026)
+
+Shell `development` apontando para o iPlex Web (build legado em modo emulador,
+servido pelo Mac) contra os Firebase Emulators com as Functions do Control.
+Nenhuma alteração de código no shell; ponte v1 inalterada.
+
+| Cenário | Resultado na TV |
+|---|---|
+| Handshake `app.ready` com o iPlex Web real | ok (Tizen 5.5, Chromium 69) |
+| Vinculação: código pedido pela TV → confirmado pelo "celular" | ok (modelo UN65TU7020GXZD lido pela ponte) |
+| Credencial persistida entre reaberturas do app | ok (entrou direto no perfil) |
+| Pedido do celular → TV inicia via AVPlay | ok: `player.open` pela ponte, `started` no celular em 3,0 s |
+| Pedido com reprodução em andamento | ok: confirmação exibida, AVPlay **não** substituído; sem resposta → `declined/no-answer` em 40 s |
+| Desvincular com o AVPlay tocando | ok: `player.stop`, nova vinculação pedida em 0,9 s |
+| HLS Sintel (Bitmovin, múltiplos grupos de mídia) | ⚠ `format-unsupported` no AVPlay; erro reportado ao celular |
+
+Não validado: teclas físicas (ninguém na TV), confirmação "Assistir agora"
+pelo controle remoto, Tizen 4.0. Ao final o app de produção foi reinstalado
+(`npm run tv`).
+
 [hosted]: https://developer.samsung.com/smarttv/develop/faq/hosted-applications.html
 [ui-faq]: https://developer.samsung.com/smarttv/develop/faq/user-interaction.html
 [remote]: https://developer.samsung.com/smarttv/develop/guides/user-interaction/remote-control.html
