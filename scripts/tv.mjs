@@ -6,6 +6,7 @@
  *   npm run tv -- --env production  (destino de produção, verificado antes)
  *   npm run tv -- --env production --allow-unpublished  (valida a tela "indisponível")
  *   npm run tv -- --target http://<ip-do-mac>:5050/      (probe no emulador do Hosting)
+ *   npm run tv -- --page design-system.html               (vitrine do Design System)
  *   npm run tv -- --host 192.168.0.50 [--port 26101] [--force-install] [--watch 60]
  *
  * Etapas: ferramentas → TV na rede → servidor SDB → conexão → autorização →
@@ -73,6 +74,8 @@ const cfg = {
   // --target substitui o destino do ambiente nesta execução (ex.: probe no emulador do Hosting).
   target: (argValue('--target') || env.VITE_IPLEX_TARGET_URL || '').trim(),
   targetOverride: Boolean(argValue('--target')),
+  // --page troca a página servida por este Mac no desenvolvimento (padrão: index.html).
+  page: argValue('--page') || 'index.html',
   loadMode: env.VITE_IPLEX_LOAD_MODE === 'navigate' ? 'navigate' : 'frame',
 }
 const appId = `${cfg.packageId}.IplexTV`
@@ -476,12 +479,14 @@ async function main() {
   const servesTestPage = environment === 'development' && !remoteTarget
   let expectTestPage = servesTestPage
   let expectUnavailable = false
+  if (!/^[a-z0-9-]+\.html$/i.test(cfg.page)) fail(`--page inválida: ${cfg.page} (use um arquivo .html da raiz, ex.: design-system.html)`)
+  if (cfg.page !== 'index.html' && !servesTestPage) fail('--page só vale no ambiente development, sem --target.')
   if (servesTestPage) {
     Object.assign(buildEnv, {
-      VITE_IPLEX_TARGET_URL: `${devServerOrigin}/index.html`,
+      VITE_IPLEX_TARGET_URL: `${devServerOrigin}/${cfg.page}`,
       VITE_IPLEX_ALLOW_INSECURE_TARGET: 'true',
     })
-    ok(`página de teste controlada servida por este Mac: ${devServerOrigin}/index.html`)
+    ok(`página de teste controlada servida por este Mac: ${devServerOrigin}/${cfg.page}`)
   } else if (remoteTarget) {
     if (cfg.targetOverride) buildEnv.VITE_IPLEX_TARGET_URL = cfg.target
     if (/^http:/i.test(cfg.target)) {

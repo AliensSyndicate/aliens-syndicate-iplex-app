@@ -1,4 +1,14 @@
+/*
+ * Página de teste controlada (somente desenvolvimento, fora do pacote da loja).
+ * Mantém cores de diagnóstico próprias (ok/erro/foco); não faz parte do
+ * Design System nem do produto.
+ */
 .online {
+  --iplex-text: #e5e3e5;
+  --iplex-text-disabled: #6b696b;
+  --iplex-focus: #007aff;
+  --iplex-success: #34c759;
+  --iplex-error: #ba473f;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,9 +19,8 @@
   text-align: center;
 }
 
-.online-wordmark {
-  font-size: 3.6vw;
-  color: var(--iplex-text-secondary);
+.online-logo {
+  font-size: 4.4vw;
 }
 
 .online-title {

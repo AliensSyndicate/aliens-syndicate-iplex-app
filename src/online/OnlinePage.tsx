@@ -4,7 +4,7 @@ import type { BridgeEventName, BridgeEvents, MediaTrack, PlatformInfo, PlayerSta
 import { subscribeNetworkChanges } from '../connection/connectivity'
 import { reportDevEvent } from '../devtools/devReport'
 import { toRemoteAction } from '../navigation/remoteKeys'
-import { IplexWordmark } from '../ui/IplexWordmark'
+import { IplexLogo } from '../design-system/IplexLogo'
 import './online.css'
 
 /**
@@ -395,7 +395,7 @@ export function OnlinePage() {
 
   return (
     <main className="online">
-      <IplexWordmark className="online-wordmark" />
+      <IplexLogo className="online-logo" />
       <h1 className="online-title">IPLEX TIZEN ONLINE</h1>
       <p className="online-subtitle">Página de teste controlada — não é o iPlex Web</p>
 

@@ -196,7 +196,7 @@ if (!storeReady && !(candidate && buildable)) {
     for (const file of ['config.xml', 'launcher.html', 'icon.png', 'author-signature.xml', 'signature1.xml']) {
       if (!listing.includes(file)) contentProblems.push(`falta ${file}`)
     }
-    for (const file of ['index.html', 'iplex-web.json']) if (listing.includes(file)) contentProblems.push(`contém ${file} (página de teste)`)
+    for (const file of ['index.html', 'iplex-web.json', 'design-system.html']) if (listing.includes(file)) contentProblems.push(`contém ${file} (página de desenvolvimento)`)
     if (/iplex-dev-report|test-streams\.mux|VITE_IPLEX_TEST_CHANNELS/.test(bundle)) contentProblems.push('bundle contém recursos de desenvolvimento')
     if (!configXml.includes('screen.size.normal.1080.1920')) contentProblems.push('config.xml sem <feature> de tamanho de tela')
     if (!configXml.includes(`<name>${appName}</name>`)) contentProblems.push(`config.xml sem <name>${appName}</name>`)

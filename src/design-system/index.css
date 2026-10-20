@@ -1,0 +1,11 @@
+/*
+ * iPlex Design System V1 — ponto de entrada de estilos.
+ * Google Sans (SIL OFL 1.1, @fontsource/google-sans) auto-hospedada:
+ * somente o subconjunto latin (cobre o português) e os pesos usados.
+ * Pesos estáticos: TVs 2018 (Chromium M56) não suportam fontes variáveis.
+ */
+@import '@fontsource/google-sans/latin-400.css';
+@import '@fontsource/google-sans/latin-500.css';
+@import '@fontsource/google-sans/latin-700.css';
+@import './tokens.css';
+@import './components.css';

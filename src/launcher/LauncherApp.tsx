@@ -3,7 +3,7 @@ import { ActionBar, type ActionItem } from '../navigation/ActionBar'
 import { useRemoteControl } from '../navigation/useRemoteControl'
 import { getPlatform } from '../platform'
 import { ShellFrame } from '../shell/ShellFrame'
-import { IplexWordmark } from '../ui/IplexWordmark'
+import { IplexContainer, IplexLogo, IplexText } from '../design-system'
 import { useLauncher, type LaunchFailure, type LauncherState } from './useLauncher'
 import './launcher.css'
 
@@ -118,6 +118,7 @@ export function LauncherApp() {
     id: 'exit',
     label: platform.canExit ? 'Sair' : 'Sair (somente na TV)',
     onSelect: () => platform.exit(),
+    variant: 'secondary',
   }
   let actions: ActionItem[] = []
   if (state.phase === 'returned') {
@@ -138,53 +139,59 @@ export function LauncherApp() {
       )}
 
       {!running && (
-        <div className="launcher-screen">
-          <header className="launcher-brand">
-            <IplexWordmark />
-            <span className="launcher-brand-suffix">TV</span>
-          </header>
-
+        <IplexContainer className="launcher-screen">
           <section className="launcher-status" aria-live="polite">
-            {status.busy && <div className="launcher-spinner" aria-hidden="true" />}
-            <h1 className="launcher-title">{status.title}</h1>
-            <p className="launcher-message">{status.message}</p>
+            <IplexLogo className="launcher-logo" />
+            <IplexText variant="display" className="launcher-title">
+              {status.title}
+            </IplexText>
+            <IplexText tone="secondary" className="launcher-message">
+              {status.message}
+            </IplexText>
             {autoRetry && (
-              <p className="launcher-code">
+              <IplexText variant="caption" tone="secondary" as="p" className="launcher-code">
                 Nova tentativa automática em {autoRetry.inSeconds} s ({autoRetry.attempt}/{autoRetry.of}).
-              </p>
+              </IplexText>
             )}
             {status.failure && (
-              <p className="launcher-code">
+              <IplexText variant="caption" tone="secondary" as="p" className="launcher-code">
                 {config?.environment === 'production'
                   ? `Código: ${status.failure.code}`
                   : `${status.failure.code} · ${status.failure.detail}`}
-              </p>
+              </IplexText>
             )}
+            {status.busy && <div className="launcher-spinner" aria-hidden="true" />}
             {actions.length > 0 && <ActionBar key={state.phase} actions={actions} />}
           </section>
 
           {config?.environment === 'production' ? (
             <footer className="launcher-details is-production">
-              <span>
+              <IplexText variant="caption" tone="secondary" as="span">
                 {__IPLEX_APP_NAME__} · versão {__IPLEX_APP_VERSION__}
-              </span>
+              </IplexText>
             </footer>
           ) : (
             <footer className="launcher-details">
-              <span>Ambiente: {config ? config.environment : '—'}</span>
-              <span>Destino: {config ? config.target.url : '—'}</span>
-              <span>
+              <IplexText variant="caption" tone="secondary" as="span">
+                Ambiente: {config ? config.environment : '—'}
+              </IplexText>
+              <IplexText variant="caption" tone="secondary" as="span">
+                Destino: {config ? config.target.url : '—'}
+              </IplexText>
+              <IplexText variant="caption" tone="secondary" as="span">
                 Plataforma: {platform.label}
                 {platform.platformVersion ? ` ${platform.platformVersion}` : ''}
-              </span>
+              </IplexText>
             </footer>
           )}
-        </div>
+        </IplexContainer>
       )}
 
       {running && !online && (
         <div className="launcher-offline" role="status">
-          Sem conexão com a internet. O iPlex continuará quando a rede voltar.
+          <IplexText variant="caption" as="span">
+            Sem conexão com a internet. O iPlex continuará quando a rede voltar.
+          </IplexText>
         </div>
       )}
     </main>

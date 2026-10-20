@@ -216,6 +216,7 @@ Opções:
 npm run tv                         # desenvolvimento: shell + página de teste servida pelo Mac
 npm run tv -- --env production     # produção: só prossegue se o iPlex Web estiver publicado
 npm run tv -- --watch 60           # mantém o receptor por 60s (mostra as teclas do controle)
+npm run tv -- --page design-system.html  # vitrine do Design System + verificações no aparelho
 npm run tv -- --host 192.168.0.50  # outra TV (ou IPLEX_TV_HOST no .env/.env.local)
 npm run tv -- --force-install      # reinstala mesmo sem mudanças
 ```

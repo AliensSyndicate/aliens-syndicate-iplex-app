@@ -1,0 +1,250 @@
+/*
+ * iPlex Design System V1 — componentes.
+ *
+ * Só classes iplex-*: nenhum seletor global, nada muda em telas que não
+ * usem os componentes. Compatível com Chromium M56 (Tizen 2018):
+ *  - sem `gap` em flex (M84), `inset` (M87), `aspect-ratio` (M88);
+ *  - foco com box-shadow (acompanha o raio; outline só a partir do M94);
+ *  - :focus-visible (M86) só em regra própria, como refinamento para Web.
+ */
+
+/* ---- Container ------------------------------------------------------ */
+.iplex-container {
+  box-sizing: border-box;
+  background-color: var(--iplex-bg);
+  color: var(--iplex-text-primary);
+  font-family: var(--iplex-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+.iplex-container--safe-area {
+  padding: var(--iplex-safe-area);
+}
+
+.iplex-container--fill {
+  width: 100%;
+  min-height: 100%;
+}
+
+/* ---- Texto ---------------------------------------------------------- */
+.iplex-text {
+  margin: 0;
+  font-family: var(--iplex-font-family);
+  line-height: var(--iplex-line-height);
+}
+
+.iplex-text--display {
+  font-size: var(--iplex-font-size-display);
+  font-weight: var(--iplex-font-weight-medium);
+  line-height: 1.15;
+}
+
+.iplex-text--title {
+  font-size: var(--iplex-font-size-title);
+  font-weight: var(--iplex-font-weight-medium);
+  line-height: 1.25;
+}
+
+.iplex-text--body {
+  font-size: var(--iplex-font-size-body);
+  font-weight: var(--iplex-font-weight-regular);
+}
+
+.iplex-text--caption {
+  font-size: var(--iplex-font-size-caption);
+  font-weight: var(--iplex-font-weight-regular);
+}
+
+.iplex-text--primary {
+  color: var(--iplex-text-primary);
+}
+
+.iplex-text--secondary {
+  color: var(--iplex-text-secondary);
+}
+
+/* ---- Card ----------------------------------------------------------- */
+.iplex-card {
+  box-sizing: border-box;
+  background-color: var(--iplex-card-bg);
+  border: none;
+  border-radius: var(--iplex-radius);
+  box-shadow: none;
+  color: inherit;
+  -webkit-transition: box-shadow var(--iplex-transition);
+  transition: box-shadow var(--iplex-transition);
+}
+
+/* Elementos pequenos, onde 48px quebraria o layout. */
+.iplex-card--radius-small {
+  border-radius: var(--iplex-radius-small);
+}
+
+.iplex-card--interactive {
+  cursor: pointer;
+  outline: none;
+}
+
+.iplex-card.is-selected {
+  box-shadow: var(--iplex-selected-ring);
+}
+
+.iplex-card--interactive:focus,
+.iplex-card.is-focused {
+  box-shadow: var(--iplex-focus-ring);
+}
+
+/* ---- Botão (somente texto) ----------------------------------------- */
+.iplex-button {
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  width: -webkit-fit-content;
+  width: fit-content;
+  box-sizing: border-box;
+  margin: 0;
+  padding: var(--iplex-button-padding-block) var(--iplex-button-padding-inline);
+  border: none;
+  border-radius: var(--iplex-radius-full);
+  font-family: var(--iplex-font-family);
+  font-size: var(--iplex-button-font-size);
+  font-weight: var(--iplex-font-weight-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  -webkit-transition: box-shadow var(--iplex-transition), -webkit-transform var(--iplex-transition), background-color var(--iplex-transition);
+  transition: box-shadow var(--iplex-transition), transform var(--iplex-transition), background-color var(--iplex-transition);
+}
+
+.iplex-button-primary {
+  background-color: var(--iplex-button-bg);
+  color: var(--iplex-button-text);
+}
+
+/* Secundário: pílula sem preenchimento, contorno e texto claros. */
+.iplex-button-secondary {
+  padding: calc(var(--iplex-button-padding-block) - var(--iplex-button-border-width)) calc(var(--iplex-button-padding-inline) - var(--iplex-button-border-width));
+  border: var(--iplex-button-border-width) solid var(--iplex-text-primary);
+  background-color: transparent;
+  color: var(--iplex-text-primary);
+}
+
+/* Foco: anel claro com vão escuro, visível sobre #0F0F0F e sobre o botão branco. */
+.iplex-button:focus,
+.iplex-button.is-focused {
+  box-shadow: var(--iplex-focus-ring);
+}
+
+.iplex-button:active {
+  -webkit-transform: scale(0.97);
+  transform: scale(0.97);
+}
+
+.iplex-button:disabled,
+.iplex-button[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  -webkit-transform: none;
+  transform: none;
+}
+
+/* Web: hover só com ponteiro real (a TV não depende de hover). */
+@media (hover: hover) {
+  :root:not([data-iplex-platform='tv']) .iplex-button-primary:hover:not(:disabled) {
+    background-color: var(--iplex-text-primary);
+  }
+
+  :root:not([data-iplex-platform='tv']) .iplex-button-secondary:hover:not(:disabled) {
+    background-color: var(--iplex-card-bg);
+  }
+}
+
+/* Web: clique de mouse não mostra o anel; teclado (Tab) mostra.
+ * Regra separada: em motores sem :focus-visible ela é ignorada e o anel
+ * continua aparecendo (comportamento seguro para a TV). */
+:root:not([data-iplex-platform='tv']) .iplex-button:focus:not(:focus-visible):not(.is-focused),
+:root:not([data-iplex-platform='tv']) .iplex-card--interactive:focus:not(:focus-visible):not(.is-focused) {
+  box-shadow: none;
+}
+
+/* Alto contraste do sistema (sombras são removidas): usa outline. */
+@media (forced-colors: active) {
+
+  .iplex-button:focus,
+  .iplex-button.is-focused,
+  .iplex-card--interactive:focus,
+  .iplex-card.is-focused {
+    outline: 3px solid CanvasText;
+    outline-offset: 4px;
+  }
+}
+
+/* ---- Ícone (Hugeicons Stroke Rounded) ------------------------------ */
+/* O <svg> herda a cor do texto (stroke="currentColor"). */
+.iplex-icon {
+  display: inline-block;
+  -webkit-flex: none;
+  flex: none;
+  width: var(--iplex-icon-size);
+  height: var(--iplex-icon-size);
+  vertical-align: middle;
+}
+
+/* ---- Logo (neumorfismo em CSS) --------------------------------------
+ * "iPlex" em Google Sans 700 com relevo: face escura, aro claro, contorno
+ * escuro e sombra, feitos com anéis de text-shadow (o -webkit-text-stroke
+ * desenha os contornos sobrepostos dos glifos da Google Sans). O brilho da
+ * face é uma camada ::after recortada no texto. Cores do efeito: tokens
+ * --iplex-logo-*, usados só aqui. Compatível com o Chromium M56. */
+.iplex-logo {
+  display: inline-block;
+  padding: 0.04em 0.05em 0.1em;
+  font-family: var(--iplex-font-family);
+  font-size: var(--iplex-logo-font-size);
+  font-weight: var(--iplex-font-weight-bold);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.iplex-logo-text {
+  position: relative;
+  display: inline-block;
+
+  font-family: "Google Sans", sans-serif;
+  font-weight: 700;
+  color: #FFFFFF;
+
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+@supports (-webkit-background-clip: text) {
+  .iplex-logo-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: transparent;
+    text-shadow: none;
+    background-image: linear-gradient(180deg,
+        var(--iplex-logo-sheen) 0%,
+        var(--iplex-logo-sheen-end) 55%,
+        var(--iplex-logo-shade) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    pointer-events: none;
+  }
+}
+
+/* ---- fim do logo ---------------------------------------------------- */

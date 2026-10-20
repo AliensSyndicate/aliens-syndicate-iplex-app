@@ -42,6 +42,24 @@ recursos da TV. A arquitetura oficial está em [docs/ARQUITETURA.md](docs/ARQUIT
 - Toda mensagem é validada: fonte (iframe), origem exata, lista de métodos e
   parâmetros.
 
+## Design System (src/design-system)
+
+- Detalhes em [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md).
+- Os 9 tokens oficiais (cores, fonte, raios) são **exatos**. Não aproxime
+  (`#fff`, `0.05`) e não crie cor de destaque, gradiente nem sombra
+  decorativa.
+- A minificação de CSS fica desligada (`cssMinify: false`) porque ela
+  reescreve os tokens. O build Tizen confere os tokens no CSS empacotado.
+- Botões (`IplexButton`, `primary`/`secondary`) têm **só texto**, nunca
+  ícone.
+- Ícones: somente Hugeicons Stroke Rounded (`@hugeicons/core-free-icons`).
+- Logo: `IplexLogo` (texto com relevo neumórfico em CSS). As cores
+  `--iplex-logo-*` só podem ser usadas no logo. Nunca use
+  `-webkit-text-stroke` com a Google Sans, porque ele desenha os contornos
+  internos dos glifos.
+- Foco sempre visível: anel em `box-shadow` (via `:focus` ou
+  `.is-focused`). Na TV não há dependência de *hover*.
+
 ## Compatibilidade
 
 - Mínimo: Tizen 4.0 / Chromium **M56**.

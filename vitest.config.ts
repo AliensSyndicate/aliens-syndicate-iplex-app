@@ -6,5 +6,7 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['src/**/*.test.ts', 'scripts/**/*.test.mjs'],
     restoreMocks: true,
+    // O Design System verifica o próprio CSS (importado com ?raw).
+    css: { include: [/src\/design-system\/.+\.css/] },
   },
 })

@@ -34,6 +34,7 @@ Também dá para dar **duplo clique em `iPlex-TV.command`** no Finder. O fluxo
 | `npm run tv` | ambiente de desenvolvimento (página de teste servida pelo Mac) |
 | `npm run tv -- --env production` | destino de produção; só prossegue se o iPlex Web estiver publicado |
 | `npm run tv -- --watch 60` | mostra no terminal as teclas do controle remoto por 60 s |
+| `npm run tv -- --page design-system.html` | abre a vitrine do Design System na TV e roda as verificações no aparelho |
 | `npm run tv -- --host <IP>` | usa outra TV (ou defina `IPLEX_TV_HOST` no `.env.local`) |
 | `npm run tv -- --force-install` | reinstala mesmo sem mudanças |
 
@@ -50,7 +51,7 @@ Pré-requisitos no Mac:
 
 | Comando | O que faz |
 |---|---|
-| `npm run dev` | shell + página de teste no navegador (`/launcher.html`) |
+| `npm run dev` | shell + página de teste no navegador (`/launcher.html`); vitrine do Design System em `/design-system.html` (`?platform=tv` para a escala de TV) |
 | `npm test` | testes unitários (ponte, validação, destino, disponibilidade, AVPlay, teclas) |
 | `npm run typecheck` / `npm run lint` | TypeScript / ESLint |
 | `npm run build` | build web (sanidade) |
@@ -92,5 +93,7 @@ tela do app sem depender da rede. Os ids são `checking`, `loading`,
   (`firebase.json`, CSP, probe, comandos de publicação).
 - [docs/MAPA-DE-TELAS.md](docs/MAPA-DE-TELAS.md): todas as telas e funções
   do app (App × Web), para o layout.
+- [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md): Design System V1 (tokens
+  oficiais, Google Sans, Hugeicons, componentes, foco e compatibilidade).
 - [docs/PUBLICACAO.md](docs/PUBLICACAO.md): o que está pronto e o que falta
   para publicar na Samsung.

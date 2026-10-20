@@ -1,0 +1,113 @@
+/*
+ * iPlex Design System V1 — tokens.
+ *
+ * Os 6 tokens de cor, a fonte e os 2 raios são OFICIAIS: não alterar nem
+ * aproximar. Os demais tokens (tipografia, espaçamento, foco) derivam deles,
+ * sem nenhuma cor nova (sem cor de destaque, sem gradientes).
+ *
+ * Compatível com Chromium M56 (Samsung Tizen 4.0, TVs 2018): custom
+ * properties (M49+), rgba, border-radius.
+ */
+:root {
+  /* ---- Oficiais ---------------------------------------------------- */
+  --iplex-bg: #0F0F0F;
+  --iplex-text-primary: #F1F1F1;
+  --iplex-text-secondary: #B7B7B7;
+
+  --iplex-card-bg: rgba(241, 243, 244, 0.0509803922);
+
+  --iplex-button-bg: #FFFFFF;
+  --iplex-button-text: #0F0F0F;
+
+  --iplex-font-family: "Google Sans", sans-serif;
+
+  --iplex-radius: 48px;
+  --iplex-radius-full: 9999px;
+
+  /* ---- Derivados (sem cores novas) --------------------------------- */
+  --iplex-font-weight-regular: 400;
+  --iplex-font-weight-medium: 500;
+  --iplex-font-weight-bold: 700;
+
+  /* Escala tipográfica (Web). A TV aumenta a escala abaixo; as proporções
+   * seguem a referência visual oficial (tela "Não foi possível conectar"). */
+  --iplex-font-size-display: 40px;
+  --iplex-font-size-title: 28px;
+  --iplex-font-size-body: 18px;
+  --iplex-font-size-caption: 14px;
+  --iplex-line-height: 1.35;
+
+  /* Espaçamento */
+  --iplex-space-1: 4px;
+  --iplex-space-2: 8px;
+  --iplex-space-3: 12px;
+  --iplex-space-4: 16px;
+  --iplex-space-5: 24px;
+  --iplex-space-6: 32px;
+  --iplex-space-7: 48px;
+
+  /* Botão: padding configurável por instância (props paddingBlock/paddingInline). */
+  --iplex-button-padding-block: 12px;
+  --iplex-button-padding-inline: 32px;
+  --iplex-button-font-size: 16px;
+  /* Contorno do botão secundário (mesma altura do primário: o padding desconta a borda). */
+  --iplex-button-border-width: 2px;
+
+  /* Raio para elementos pequenos (onde 48px quebraria o layout). */
+  --iplex-radius-small: 16px;
+
+  /* Foco: anel em --iplex-text-primary, separado do elemento por um vão
+   * na cor do fundo. box-shadow acompanha o border-radius em todos os
+   * motores (outline só passa a acompanhar no Chromium 94). */
+  --iplex-focus-gap: 4px;
+  --iplex-focus-width: 3px;
+  --iplex-focus-ring: 0 0 0 var(--iplex-focus-gap) var(--iplex-bg),
+    0 0 0 calc(var(--iplex-focus-gap) + var(--iplex-focus-width)) var(--iplex-text-primary);
+  --iplex-selected-ring: 0 0 0 var(--iplex-focus-gap) var(--iplex-bg),
+    0 0 0 calc(var(--iplex-focus-gap) + var(--iplex-focus-width)) var(--iplex-text-secondary);
+
+  /* Ícones Hugeicons Stroke Rounded: tamanho único (traço 1.5 vem do
+   * próprio conjunto Stroke Rounded e escala com o ícone). */
+  --iplex-icon-size: 24px;
+
+  /* ---- Logo (neumorfismo em CSS, components.css) --------------------
+   * Efeito pedido para o logo e restrito a ele: estas cores não podem ser
+   * usadas em nenhum outro elemento. Derivadas das oficiais:
+   * face = #0F0F0F + 6% de #F1F1F1; brilhos = #F1F1F1 translúcido;
+   * contorno e sombra = preto (mais escuro que o fundo, base do relevo). */
+  --iplex-logo-font-size: 44px;
+  --iplex-logo-face: #1D1D1D;
+  --iplex-logo-rim: rgba(241, 241, 241, 0.5);
+  --iplex-logo-shine: rgba(241, 241, 241, 0.3);
+  --iplex-logo-sheen: rgba(241, 241, 241, 0.14);
+  --iplex-logo-sheen-end: rgba(241, 241, 241, 0);
+  --iplex-logo-shade: rgba(0, 0, 0, 0.28);
+  --iplex-logo-outline: #000000;
+  --iplex-logo-drop: rgba(0, 0, 0, 0.85);
+  /* ---- fim do logo ------------------------------------------------- */
+
+  /* Área segura e transições */
+  --iplex-safe-area: 48px;
+  --iplex-transition: 120ms ease;
+}
+
+/* TV (10 pés, 1920×1080): mesma identidade, escala maior.
+ * Ativado por <html data-iplex-platform="tv">. Valores medidos na
+ * referência visual oficial em 1920×1080: título 64px, texto 34px e
+ * logo com ~72px de altura. Botão: ~65px de altura, texto de 24px. */
+:root[data-iplex-platform='tv'] {
+  --iplex-font-size-display: 64px;
+  --iplex-font-size-title: 44px;
+  --iplex-font-size-body: 34px;
+  --iplex-font-size-caption: 26px;
+  --iplex-button-font-size: 24px;
+  --iplex-button-padding-block: 18px;
+  --iplex-button-padding-inline: 48px;
+  --iplex-icon-size: 40px;
+  /* Letras com ~58px de altura: a mesma da arte original exibida com 72px. */
+  --iplex-logo-font-size: 78px;
+  --iplex-focus-gap: 6px;
+  --iplex-focus-width: 4px;
+  /* 5% de 1920: área segura contra overscan da TV */
+  --iplex-safe-area: 96px;
+}

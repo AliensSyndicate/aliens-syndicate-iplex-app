@@ -46,6 +46,9 @@ export default defineConfig(({ mode }) => {
       plugins,
       define,
       build: {
+        // Sem minificar CSS: o minificador reescreve os tokens oficiais do
+        // Design System (ex.: alfa 0.0509803922 → 0.05, #FFFFFF → #fff).
+        cssMinify: false,
         rollupOptions: {
           input: {
             main: resolve(root, 'index.html'),
@@ -69,6 +72,8 @@ export default defineConfig(({ mode }) => {
       target: 'chrome56',
       modulePreload: false,
       cssCodeSplit: false,
+      // Tokens oficiais do Design System saem exatamente como escritos.
+      cssMinify: false,
       rollupOptions: {
         input: resolve(root, tizenPage),
         output: { format: 'iife', codeSplitting: false },

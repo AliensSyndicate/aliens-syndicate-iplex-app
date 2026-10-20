@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { IplexButton } from '../design-system'
 import type { RemoteAction } from './remoteKeys'
 import { useRemoteControl } from './useRemoteControl'
 
@@ -6,6 +7,8 @@ export interface ActionItem {
   id: string
   label: string
   onSelect: () => void
+  /** Padrão: primary. Ações de saída/cancelamento usam secondary. */
+  variant?: 'primary' | 'secondary'
 }
 
 interface ActionBarProps {
@@ -42,18 +45,18 @@ export function ActionBar({ actions }: ActionBarProps) {
   return (
     <div className="action-bar">
       {actions.map((action, index) => (
-        <button
+        <IplexButton
           key={action.id}
           ref={(element) => {
             buttons.current[index] = element
           }}
-          type="button"
-          className={index === focused ? 'action-button is-focused' : 'action-button'}
+          variant={action.variant}
+          focused={index === focused}
           onClick={action.onSelect}
           onMouseEnter={() => setFocused(index)}
         >
           {action.label}
-        </button>
+        </IplexButton>
       ))}
     </div>
   )

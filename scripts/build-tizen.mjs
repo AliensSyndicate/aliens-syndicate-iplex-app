@@ -105,9 +105,11 @@ const allowNavigationXml = navigationEntries.length
   ? `    <tizen:allow-navigation>${[...new Set(navigationEntries)].join(' ')}</tizen:allow-navigation>`
   : '    <!-- modo empacotado: nenhuma navegação externa declarada -->'
 
-// A página de teste só entra no widget em desenvolvimento ou quando é o destino local.
+// A página de teste só entra no widget em desenvolvimento ou quando é o destino local;
+// a vitrine do Design System, só em desenvolvimento.
 const pages = ['launcher.html']
 if (environment === 'development' || !remoteTarget) pages.push('index.html')
+if (environment === 'development') pages.push('design-system.html')
 
 console.log(`[build-tizen] ambiente: ${environment}`)
 console.log('[build-tizen] destino:', targetRaw, remoteTarget ? '(hospedado)' : '(empacotado)')
@@ -153,6 +155,28 @@ for (const page of pages) {
 }
 if (!readFileSync(join(widgetDir, 'launcher.html'), 'utf8').includes('$WEBAPIS/webapis/webapis.js')) {
   fail('launcher.html sem $WEBAPIS/webapis/webapis.js (necessário ao AVPlay)')
+}
+
+// Design System: os tokens oficiais precisam sair exatamente como em tokens.css.
+const officialTokens = [
+  ...readFileSync(join(root, 'src', 'design-system', 'tokens.css'), 'utf8').matchAll(
+    /^\s*(--iplex-(?:bg|text-primary|text-secondary|card-bg|button-bg|button-text|font-family|radius|radius-full)):\s*([^;]+);/gm,
+  ),
+].map(([, name, value]) => `${name}: ${value}`)
+if (officialTokens.length !== 9) fail(`tokens oficiais não encontrados em tokens.css (${officialTokens.length}/9)`)
+const widgetCss = readdirSync(join(widgetDir, 'assets'))
+  .filter((name) => name.endsWith('.css'))
+  .map((name) => readFileSync(join(widgetDir, 'assets', name), 'utf8'))
+for (const css of widgetCss) {
+  const missing = officialTokens.filter((token) => !css.includes(token))
+  if (missing.length) fail(`CSS do widget alterou tokens oficiais: ${missing.join(' · ')}`)
+}
+console.log(`[build-tizen] tokens oficiais do Design System preservados em ${widgetCss.length} folha(s) de estilo`)
+
+// Google Sans (SIL OFL 1.1): a licença acompanha as fontes redistribuídas no pacote.
+if (readdirSync(join(widgetDir, 'assets')).some((name) => name.startsWith('google-sans-'))) {
+  mkdirSync(join(widgetDir, 'licenses'), { recursive: true })
+  copyFileSync(join(root, 'node_modules', '@fontsource', 'google-sans', 'LICENSE'), join(widgetDir, 'licenses', 'google-sans-OFL.txt'))
 }
 console.log(`\n[build-tizen] widget pronto em ${widgetDir}`)
 console.log(readdirSync(widgetDir).map((name) => `  - ${name}`).join('\n'))

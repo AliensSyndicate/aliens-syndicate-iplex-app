@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { reportDevEvent, reportPageLifecycle } from './devtools/devReport'
+import './design-system/index.css'
 import './ui/tv.css'
 import App from './App.tsx'
 
