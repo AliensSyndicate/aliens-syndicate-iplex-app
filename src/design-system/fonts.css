@@ -1,0 +1,35 @@
+/*
+ * Google Sans (SIL OFL 1.1, Copyright 2017 Google), arquivos locais do pacote
+ * @fontsource/google-sans empacotados no widget. Mesmos arquivos e pesos do
+ * iPlex Web (400/500/700, latin).
+ *
+ * font-display: block (e não o swap do CSS do @fontsource): o texto nunca
+ * aparece primeiro numa fonte do sistema para depois trocar (FOUT). Os
+ * arquivos são locais (file://), então o bloqueio dura só a leitura do disco.
+ */
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(@fontsource/google-sans/files/google-sans-latin-400-normal.woff2) format('woff2'),
+    url(@fontsource/google-sans/files/google-sans-latin-400-normal.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url(@fontsource/google-sans/files/google-sans-latin-500-normal.woff2) format('woff2'),
+    url(@fontsource/google-sans/files/google-sans-latin-500-normal.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Google Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url(@fontsource/google-sans/files/google-sans-latin-700-normal.woff2) format('woff2'),
+    url(@fontsource/google-sans/files/google-sans-latin-700-normal.woff) format('woff');
+}

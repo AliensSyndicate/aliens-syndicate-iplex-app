@@ -148,8 +148,9 @@ desenvolvimento** e não entra no pacote da loja.
 - **Quando aparece:** o servidor responde, mas o iPlex Web não está lá. Os
   casos são: manifesto ausente ou sem CORS, uma página do site no lugar do
   manifesto (*soft 404*), ou HTTP 404.
-- **Hoje:** é a tela que a TV mostra em produção, porque o site `iplex-2c8fc`
-  ainda não tem publicação. Isso foi verificado no aparelho.
+- **Até 19/10/2026:** era a tela que a TV mostrava em produção, porque o site
+  `iplex-2c8fc` ainda não tinha publicação (verificado no aparelho). Desde
+  20/10/2026 o iPlex Web está publicado.
   fora do ar. Tente novamente mais tarde."
 - **Ações:** **Tentar novamente** e **Sair**. Serve também como tela de
   manutenção.

@@ -199,10 +199,8 @@
 }
 
 /* ---- Logo ------------------------------------------------------------
- * "iPlex" em texto: Google Sans 700, branco (#FFFFFF), sem relevo. Uma
- * camada ::after recortada no texto dá um brilho vertical suave (mais claro
- * em cima, um pouco mais escuro embaixo). Cores: tokens --iplex-logo-*,
- * usados só aqui. Compatível com o Chromium M56 (-webkit-background-clip). */
+ * "iPlex" em texto: Google Sans 700, branco sólido (#FFFFFF), sem brilho,
+ * reflexo, relevo, contorno ou sombra — igual ao logo do iPlex Web. */
 .iplex-logo {
   display: inline-block;
   padding: 0.04em 0.05em 0.1em;
@@ -220,25 +218,7 @@
   position: relative;
   display: inline-block;
   color: var(--iplex-logo-color);
-}
-
-@supports (-webkit-background-clip: text) {
-  .iplex-logo-text::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    color: transparent;
-    background-image: linear-gradient(
-      180deg,
-      var(--iplex-logo-sheen) 0%,
-      var(--iplex-logo-sheen-end) 55%,
-      var(--iplex-logo-shade) 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    pointer-events: none;
-  }
+  text-shadow: none;
 }
 
 /* ---- fim do logo ---------------------------------------------------- */

@@ -15,15 +15,18 @@ O domínio `alienssyndicate.com` pertence ao Core e **não é usado** pelo
 Player. A configuração completa do Hosting (`firebase.json`, CSP, cache,
 probe e comandos de publicação) está em [HOSTING.md](HOSTING.md).
 
-## Situação verificada (19/10/2026)
+## Situação verificada (20/10/2026)
 
-- O site `iplex-2c8fc` existe (`DEFAULT_SITE`), mas ainda **não tem
-  publicação**: responde 404 "Site Not Found".
-- Na TV, o shell de produção acessa `https://iplex-2c8fc.web.app/` por HTTPS,
-  com certificado aceito pelo Tizen 5.5. Como não acha o manifesto, mostra
-  **"iPlex indisponível no momento"**.
-- `npm run tv -- --env production` faz a mesma verificação antes de instalar
-  e **para** se o iPlex Web não estiver publicado.
+- O iPlex Web (repositório `aliens-syndicate-iplex-web`) está **publicado** na
+  raiz de `https://iplex-2c8fc.web.app/`, que é a rota do webview do shell de
+  produção (`VITE_IPLEX_TARGET_URL` em `.env.production`, modo `frame`).
+- Conferido por `curl`: `/iplex-web.json` = `{ "app": "iplex-web", "version":
+  "0.1.0", "bridgeVersion": 1 }` com `Access-Control-Allow-Origin: *` e
+  `no-cache`; sem `X-Frame-Options` e sem `frame-ancestors`.
+- Ainda não validado no aparelho com o Web publicado (`npm run tv -- --env
+  production`). Até 19/10/2026 a TV mostrava "iPlex indisponível no momento".
+- `IPLEX_TV_ALLOW_UNPUBLISHED=false` no `.env`: o `npm run tv` volta a exigir
+  o Web publicado.
 
 ## Requisitos obrigatórios
 

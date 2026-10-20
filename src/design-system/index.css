@@ -4,8 +4,6 @@
  * somente o subconjunto latin (cobre o português) e os pesos usados.
  * Pesos estáticos: TVs 2018 (Chromium M56) não suportam fontes variáveis.
  */
-@import '@fontsource/google-sans/latin-400.css';
-@import '@fontsource/google-sans/latin-500.css';
-@import '@fontsource/google-sans/latin-700.css';
+@import './fonts.css';
 @import './tokens.css';
 @import './components.css';

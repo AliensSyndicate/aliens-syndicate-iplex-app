@@ -71,15 +71,10 @@
   --iplex-icon-size: 24px;
 
   /* ---- Logo (components.css) ----------------------------------------
-   * Texto branco, sem relevo, com brilho vertical suave. Estas cores são
-   * só do logo e não podem ser usadas em nenhum outro elemento:
-   * cor = #FFFFFF (o branco oficial); brilho = #F1F1F1 translúcido no topo;
-   * sombreado = preto translúcido na base. */
+   * Texto branco SÓLIDO, sem brilho, reflexo, relevo, contorno ou sombra
+   * (Design System do iPlex; mesmo logo do iPlex Web). */
   --iplex-logo-font-size: 44px;
   --iplex-logo-color: #FFFFFF;
-  --iplex-logo-sheen: rgba(241, 241, 241, 0.14);
-  --iplex-logo-sheen-end: rgba(241, 241, 241, 0);
-  --iplex-logo-shade: rgba(0, 0, 0, 0.28);
   /* ---- fim do logo ------------------------------------------------- */
 
   /* Área segura e transições */

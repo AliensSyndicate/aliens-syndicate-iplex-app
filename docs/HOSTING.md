@@ -7,7 +7,7 @@
 | Projeto Firebase | `iplex-2c8fc` | `.firebaserc` do Gestor; `gcloud config get-value project` |
 | **ID do site de Hosting** | **`iplex-2c8fc`** (tipo `DEFAULT_SITE`) | `firebase hosting:sites:list --project iplex-2c8fc` |
 | **URL HTTPS real** | **`https://iplex-2c8fc.web.app`** (também `https://iplex-2c8fc.firebaseapp.com`) | Mesma listagem |
-| Publicações no site | **Nenhuma**: responde 404 "Site Not Found" | `curl` |
+| Publicações no site | **iPlex Web publicado em 20/10/2026** (antes: 404 "Site Not Found") | `curl` |
 | Outros usos do projeto | O **Gestor** publica Functions (codebase `iplex-gestor`), Firestore e Storage, e **não usa Hosting** | `firebase.json` do Gestor (só leitura) |
 | Código do iPlex Web | **Não existe neste Mac** | `~/Workspace` |
 | Domínio `alienssyndicate.com` | É do Core (`aliens-syndicate-docs`). **Não é usado** pelo Player | — |

@@ -53,14 +53,12 @@ describe('logo em CSS', () => {
     for (const source of [tokens, components].map(withoutLogo)) expect(source).not.toMatch(/--iplex-logo-(?!font-size)/)
   })
 
-  it('texto branco, sem relevo, com brilho vertical recortado no texto', () => {
+  it('texto branco sólido, sem brilho, reflexo, relevo nem sombra', () => {
     const [logoTokens = ''] = logoSections(tokens)
     const [logo = ''] = logoSections(components)
     expect(logoTokens).toContain('--iplex-logo-color: #FFFFFF;')
     expect(logo).toContain('color: var(--iplex-logo-color)')
-    expect(withoutComments(logo)).not.toMatch(/text-shadow|text-stroke/)
-    expect(logo).toMatch(/@supports \(-webkit-background-clip: text\)/)
-    expect(logo).toMatch(/linear-gradient\(\s*180deg,\s*var\(--iplex-logo-sheen\)/)
+    expect(withoutComments(logo)).not.toMatch(/text-stroke|text-shadow:(?!\s*none)|gradient|background-clip|::after/)
   })
 })
 
