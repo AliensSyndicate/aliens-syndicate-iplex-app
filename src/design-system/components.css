@@ -198,12 +198,11 @@
   vertical-align: middle;
 }
 
-/* ---- Logo (neumorfismo em CSS) --------------------------------------
- * "iPlex" em Google Sans 700 com relevo: face escura, aro claro, contorno
- * escuro e sombra, feitos com anéis de text-shadow (o -webkit-text-stroke
- * desenha os contornos sobrepostos dos glifos da Google Sans). O brilho da
- * face é uma camada ::after recortada no texto. Cores do efeito: tokens
- * --iplex-logo-*, usados só aqui. Compatível com o Chromium M56. */
+/* ---- Logo ------------------------------------------------------------
+ * "iPlex" em texto: Google Sans 700, branco (#FFFFFF), sem relevo. Uma
+ * camada ::after recortada no texto dá um brilho vertical suave (mais claro
+ * em cima, um pouco mais escuro embaixo). Cores: tokens --iplex-logo-*,
+ * usados só aqui. Compatível com o Chromium M56 (-webkit-background-clip). */
 .iplex-logo {
   display: inline-block;
   padding: 0.04em 0.05em 0.1em;
@@ -220,13 +219,7 @@
 .iplex-logo-text {
   position: relative;
   display: inline-block;
-
-  font-family: "Google Sans", sans-serif;
-  font-weight: 700;
-  color: #FFFFFF;
-
-  text-shadow: none;
-  -webkit-text-stroke: 0;
+  color: var(--iplex-logo-color);
 }
 
 @supports (-webkit-background-clip: text) {
@@ -236,11 +229,12 @@
     top: 0;
     left: 0;
     color: transparent;
-    text-shadow: none;
-    background-image: linear-gradient(180deg,
-        var(--iplex-logo-sheen) 0%,
-        var(--iplex-logo-sheen-end) 55%,
-        var(--iplex-logo-shade) 100%);
+    background-image: linear-gradient(
+      180deg,
+      var(--iplex-logo-sheen) 0%,
+      var(--iplex-logo-sheen-end) 55%,
+      var(--iplex-logo-shade) 100%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     pointer-events: none;

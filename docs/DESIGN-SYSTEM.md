@@ -44,7 +44,7 @@ exemplo, `#fff` no lugar de `#FFFFFF`).
   `vite.config.ts`). O minificador reescrevia
   `0.0509803922` → `0.05` e `#FFFFFF` → `#fff`.
 
-**Tokens derivados (sem cores novas, exceto o relevo do logo — seção 2):**
+**Tokens derivados (sem cores novas, exceto o brilho do logo — seção 2):**
 
 - Tipografia: tamanhos `display/title/body/caption`, pesos 400/500/700 e
   altura de linha.
@@ -127,42 +127,28 @@ por padrão. Os estados aparecem como anéis:
 - seleção: anel `#B7B7B7`;
 - foco: anel `#F1F1F1`.
 
-**Logo em CSS (neumorfismo):** o logo é texto ("iPlex" em Google Sans 700)
-com relevo feito em CSS. Ele reproduz a arte oficial (a mesma do ícone
-`tizen/icon.png`): face escura, aro claro, contorno escuro e sombra. A versão em imagem foi
-descartada porque ficava apagada e sem nitidez na TV. O texto em CSS é
-vetorial (nítido em qualquer tamanho) e não pesa no pacote; o PNG tinha
-405 KB.
+**Logo em CSS:** o logo é texto ("iPlex" em Google Sans 700), **branco
+(`#FFFFFF`) e sem relevo**. Esta é a versão definitiva. A arte em imagem
+ficava apagada e sem nitidez na TV, e um relevo neumórfico em CSS foi
+testado e descartado. O texto em CSS é vetorial, nítido em qualquer
+tamanho, e não pesa no pacote.
 
-- **Como é feito:**
-  - Anéis de `text-shadow`, em 16 direções cada:
-    - um anel na cor da face, que engrossa a letra, porque a Google Sans
-      700 é mais fina que a arte;
-    - um brilho no topo;
-    - o aro claro;
-    - o contorno escuro;
-    - a sombra projetada.
-  - Uma camada `::after` com gradiente recortado no texto
-    (`-webkit-background-clip: text`) dá o brilho da face. Ela fica dentro
-    de `@supports` e, se o motor não suportar o recorte, simplesmente não
-    aparece.
-- **Por que não `-webkit-text-stroke`:** os glifos da Google Sans têm
-  contornos sobrepostos, e o traço desenha linhas internas (um retângulo
-  dentro do "P", a barra do "e"). A sombra usa a silhueta preenchida e não
-  tem esse problema. Um teste impede o uso do traço no logo.
-- **Cores do relevo:** tokens `--iplex-logo-*`, derivados das oficiais.
-  - Face: `#1D1D1D` (`#0F0F0F` + 6% de `#F1F1F1`).
-  - Brilhos: `#F1F1F1` translúcido.
-  - Contorno e sombra: preto, a única cor mais escura que o fundo, base de
-    qualquer relevo.
-
-  Esses tokens são uma exceção pedida para o logo: um teste garante que
-  eles só aparecem na seção do logo. No resto do Design System continua
-  valendo "só cores oficiais, sem gradiente".
-- **Diferença em relação à arte:** as letras são da Google Sans, então o
-  "e" e o "x" diferem um pouco do desenho original. A arte original
-  continua sendo usada no ícone da loja (`tizen/icon.png`), que precisa ser
-  imagem.
+- **Brilho:** uma camada `::after` com gradiente vertical recortado no
+  texto (`-webkit-background-clip: text`). O topo fica branco e a base um
+  pouco mais escura. A camada fica dentro de `@supports`: se o motor não
+  suportar o recorte, ela não aparece e o logo fica branco liso.
+- **Cores:** tokens `--iplex-logo-*`, usados só no logo (um teste garante
+  isso). No resto do Design System continua valendo "só cores oficiais, sem
+  gradiente".
+  - Cor: `#FFFFFF`, o branco oficial.
+  - Brilho no topo: `#F1F1F1` translúcido.
+  - Sombreado na base: preto translúcido.
+- **Sem `text-shadow` e sem `-webkit-text-stroke`:** um teste garante isso.
+  Além de não fazerem parte do visual, o traço desenha os contornos
+  sobrepostos dos glifos da Google Sans (um retângulo dentro do "P", a
+  barra do "e").
+- **Arte original:** continua no ícone da loja (`tizen/icon.png`), que
+  precisa ser imagem.
 
 ## 3. Foco e navegação
 
@@ -263,7 +249,7 @@ As imagens estão em [MAPA-DE-TELAS.md](MAPA-DE-TELAS.md).
 
 - **O que mudou (só apresentação):**
   - fundo;
-  - logo em CSS com relevo neumórfico, centralizado, no lugar da marca
+  - logo em CSS (texto branco), centralizado, no lugar da marca
     tipográfica;
   - tipografia Google Sans;
   - botões `IplexButton`: "Tentar novamente" e "Abrir novamente" como
@@ -322,7 +308,7 @@ ok** (11 verificações e o handshake).
 | Google Sans | 400, 500 e 700 carregados |
 | Foco | Por estado e foco real: `rgb(15,15,15) 0 0 0 6px, rgb(241,241,241) 0 0 0 10px` |
 | Ícones | 10 ícones, traço 1.5, 40px |
-| Logo em CSS | 50 sombras de texto, brilho da face ativo (`-webkit-background-clip: text`), Google Sans 700 carregada, 78px (161×78px) |
+| Logo em CSS | Branco `rgb(255, 255, 255)`, sem sombra, brilho ativo (`-webkit-background-clip: text`), Google Sans 700 carregada, 78px |
 
 **No navegador (Web, Chrome):**
 
@@ -344,10 +330,8 @@ da validação, a TV ficou com esse shell de produção.
 - **Distribuição ao iPlex Web:** decidir entre copiar a pasta ou publicar
   um pacote privado.
 - **Logo em CSS:** depende da Google Sans 700. Até a fonte carregar
-  (`font-display: swap`; no app, as fontes são locais), o relevo aparece na
-  fonte de reserva. Para um logo idêntico à arte, com o "e" e o "x"
-  originais, seria preciso o vetor (SVG) da arte; aí o relevo pode ser
-  aplicado a ele.
+  (`font-display: swap`), o logo aparece na fonte de reserva. No app as
+  fontes são locais, então a troca é imediata.
 - **Avisos de terceiros:** React e Hugeicons são MIT. O Hugeicons não entra
   no pacote de produção. Para a loja, convém um arquivo de avisos de
   terceiros cobrindo o React, como já é feito para a Google Sans.

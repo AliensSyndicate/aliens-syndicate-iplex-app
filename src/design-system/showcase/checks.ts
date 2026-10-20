@@ -200,15 +200,20 @@ export async function runDesignSystemChecks(root: HTMLElement): Promise<CheckRes
 
   const logo = root.querySelector('.iplex-logo-text') as HTMLElement | null
   const logoStyle = logo ? getComputedStyle(logo) : null
-  const shadows = logoStyle ? (logoStyle.textShadow.match(/rgba?\(/g) ?? []).length : 0
   const sheen = supports('-webkit-background-clip', 'text')
   const logoFont = loaded[FONT_WEIGHTS.indexOf(700)]
   add(
     'logo',
-    'Logo em CSS (relevo neumórfico)',
-    !!logoStyle && shadows >= 50 && sheen && logoFont && /Google Sans/.test(logoStyle.fontFamily) && logoStyle.fontWeight === '700',
+    'Logo em CSS (branco, sem relevo)',
+    !!logoStyle &&
+      logoStyle.color === 'rgb(255, 255, 255)' &&
+      logoStyle.textShadow === 'none' &&
+      sheen &&
+      logoFont &&
+      /Google Sans/.test(logoStyle.fontFamily) &&
+      logoStyle.fontWeight === '700',
     logoStyle
-      ? `${shadows} sombras de texto · brilho da face ${sheen ? 'ok' : 'sem -webkit-background-clip: text'} · Google Sans ${logoStyle.fontWeight} ${logoFont ? 'carregada' : 'não carregada'} · ${logoStyle.fontSize} · ${Math.round(logo!.getBoundingClientRect().width)}x${Math.round(logo!.getBoundingClientRect().height)} px`
+      ? `cor ${logoStyle.color} · sombra ${logoStyle.textShadow} · brilho ${sheen ? 'ok' : 'sem -webkit-background-clip: text'} · Google Sans ${logoStyle.fontWeight} ${logoFont ? 'carregada' : 'não carregada'} · ${logoStyle.fontSize} · ${Math.round(logo!.getBoundingClientRect().width)}x${Math.round(logo!.getBoundingClientRect().height)} px`
       : 'ausente',
   )
 

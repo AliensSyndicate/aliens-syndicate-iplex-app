@@ -53,10 +53,10 @@ recursos da TV. A arquitetura oficial está em [docs/ARQUITETURA.md](docs/ARQUIT
 - Botões (`IplexButton`, `primary`/`secondary`) têm **só texto**, nunca
   ícone.
 - Ícones: somente Hugeicons Stroke Rounded (`@hugeicons/core-free-icons`).
-- Logo: `IplexLogo` (texto com relevo neumórfico em CSS). As cores
-  `--iplex-logo-*` só podem ser usadas no logo. Nunca use
-  `-webkit-text-stroke` com a Google Sans, porque ele desenha os contornos
-  internos dos glifos.
+- Logo: `IplexLogo`, texto branco (`#FFFFFF`) sem relevo, com brilho
+  vertical suave. As cores `--iplex-logo-*` só podem ser usadas no logo.
+  Nunca use `-webkit-text-stroke` com a Google Sans, porque ele desenha os
+  contornos internos dos glifos.
 - Foco sempre visível: anel em `box-shadow` (via `:focus` ou
   `.is-focused`). Na TV não há dependência de *hover*.
 
@@ -87,13 +87,15 @@ TypeScript e ESLint.
 npm run tv
 ```
 
-Build, instala e valida na Samsung de desenvolvimento.
+Padrão: compila e instala **sempre a última versão de produção** na Samsung
+de desenvolvimento e valida no aparelho. Sem o iPlex Web publicado, mostra
+"iPlex indisponível" (`IPLEX_TV_ALLOW_UNPUBLISHED=true` no `.env`).
 
 ```bash
-npm run tv -- --env production --allow-unpublished
+npm run tv -- --env development
 ```
 
-Valida o shell de produção na TV.
+Shell + página de teste servida pelo Mac (roteiro do player).
 
 ```bash
 npm run release:tizen

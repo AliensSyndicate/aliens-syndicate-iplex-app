@@ -8,7 +8,7 @@ import { IplexButton, IplexCard, IplexContainer, IplexIcon, IplexLogo, IplexText
 
 const withoutComments = (source: string) => source.replace(/\/\*[\s\S]*?\*\//g, '')
 
-/** Seção do logo (relevo neumórfico autorizado só para ele), delimitada por comentários. */
+/** Seção do logo (cores e brilho autorizados só para ele), delimitada por comentários. */
 const LOGO_SECTION = /\/\* ---- Logo[\s\S]*?\/\* ---- fim do logo[^*]*\*\//g
 const logoSections = (source: string) => source.match(LOGO_SECTION) ?? []
 const withoutLogo = (source: string) => source.replace(LOGO_SECTION, '')
@@ -46,20 +46,21 @@ describe('tokens oficiais', () => {
   })
 })
 
-describe('logo em CSS (neumorfismo)', () => {
-  it('as cores do relevo são tokens --iplex-logo-* usados só na seção do logo', () => {
+describe('logo em CSS', () => {
+  it('as cores do logo são tokens --iplex-logo-* usados só na seção do logo', () => {
     expect(logoSections(tokens)).toHaveLength(1)
     expect(logoSections(components)).toHaveLength(1)
     for (const source of [tokens, components].map(withoutLogo)) expect(source).not.toMatch(/--iplex-logo-(?!font-size)/)
   })
 
-  it('relevo com anéis de text-shadow, sem -webkit-text-stroke (desenha os contornos internos da Google Sans)', () => {
+  it('texto branco, sem relevo, com brilho vertical recortado no texto', () => {
+    const [logoTokens = ''] = logoSections(tokens)
     const [logo = ''] = logoSections(components)
-    expect(logo).toMatch(/text-shadow:/)
-    // 3 anéis de 16 sombras (face, aro, contorno) + a cor da face.
-    expect((withoutComments(logo).match(/var\(--iplex-logo-(face|rim|outline)\)/g) ?? []).length).toBe(49)
-    expect(logo).not.toMatch(/text-stroke\s*:/)
+    expect(logoTokens).toContain('--iplex-logo-color: #FFFFFF;')
+    expect(logo).toContain('color: var(--iplex-logo-color)')
+    expect(withoutComments(logo)).not.toMatch(/text-shadow|text-stroke/)
     expect(logo).toMatch(/@supports \(-webkit-background-clip: text\)/)
+    expect(logo).toMatch(/linear-gradient\(\s*180deg,\s*var\(--iplex-logo-sheen\)/)
   })
 })
 

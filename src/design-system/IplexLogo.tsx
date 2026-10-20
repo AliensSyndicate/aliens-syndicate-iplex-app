@@ -9,9 +9,8 @@ export type IplexLogoProps = {
 const BRAND = 'iPlex'
 
 /**
- * Logo do iPlex em CSS: "iPlex" em Google Sans 700 com relevo neumórfico
- * (aro claro, contorno escuro e sombra), reproduzindo a arte oficial.
- * Tamanho pelo token --iplex-logo-font-size.
+ * Logo do iPlex em CSS: "iPlex" em Google Sans 700, branco, sem relevo, com
+ * brilho vertical suave. Tamanho pelo token --iplex-logo-font-size.
  */
 export function IplexLogo({ className, label = BRAND }: IplexLogoProps) {
   return (

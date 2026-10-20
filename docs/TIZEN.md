@@ -213,10 +213,10 @@ Com um comando (ou duplo clique em `iPlex-TV.command` no Finder), o script:
 Opções:
 
 ```bash
-npm run tv                         # desenvolvimento: shell + página de teste servida pelo Mac
-npm run tv -- --env production     # produção: só prossegue se o iPlex Web estiver publicado
+npm run tv                         # padrão (IPLEX_TV_ENV=production): sempre a última versão de produção
+npm run tv -- --env development    # desenvolvimento: shell + página de teste servida pelo Mac
 npm run tv -- --watch 60           # mantém o receptor por 60s (mostra as teclas do controle)
-npm run tv -- --page design-system.html  # vitrine do Design System + verificações no aparelho
+npm run tv -- --page design-system.html  # vitrine do Design System (implica development)
 npm run tv -- --host 192.168.0.50  # outra TV (ou IPLEX_TV_HOST no .env/.env.local)
 npm run tv -- --force-install      # reinstala mesmo sem mudanças
 ```

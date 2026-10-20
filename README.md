@@ -31,8 +31,8 @@ Também dá para dar **duplo clique em `iPlex-TV.command`** no Finder. O fluxo
 
 | Comando | O que faz |
 |---|---|
-| `npm run tv` | ambiente de desenvolvimento (página de teste servida pelo Mac) |
-| `npm run tv -- --env production` | destino de produção; só prossegue se o iPlex Web estiver publicado |
+| `npm run tv` | **padrão: produção, sempre a última versão** do app (compila o código atual e reinstala se mudou). Enquanto o iPlex Web não estiver publicado, a TV mostra "iPlex indisponível" (`IPLEX_TV_ALLOW_UNPUBLISHED=true` no `.env`) |
+| `npm run tv -- --env development` | shell apontando para a página de teste servida pelo Mac (roteiro de testes do player) |
 | `npm run tv -- --watch 60` | mostra no terminal as teclas do controle remoto por 60 s |
 | `npm run tv -- --page design-system.html` | abre a vitrine do Design System na TV e roda as verificações no aparelho |
 | `npm run tv -- --host <IP>` | usa outra TV (ou defina `IPLEX_TV_HOST` no `.env.local`) |

@@ -70,20 +70,16 @@
    * próprio conjunto Stroke Rounded e escala com o ícone). */
   --iplex-icon-size: 24px;
 
-  /* ---- Logo (neumorfismo em CSS, components.css) --------------------
-   * Efeito pedido para o logo e restrito a ele: estas cores não podem ser
-   * usadas em nenhum outro elemento. Derivadas das oficiais:
-   * face = #0F0F0F + 6% de #F1F1F1; brilhos = #F1F1F1 translúcido;
-   * contorno e sombra = preto (mais escuro que o fundo, base do relevo). */
+  /* ---- Logo (components.css) ----------------------------------------
+   * Texto branco, sem relevo, com brilho vertical suave. Estas cores são
+   * só do logo e não podem ser usadas em nenhum outro elemento:
+   * cor = #FFFFFF (o branco oficial); brilho = #F1F1F1 translúcido no topo;
+   * sombreado = preto translúcido na base. */
   --iplex-logo-font-size: 44px;
-  --iplex-logo-face: #1D1D1D;
-  --iplex-logo-rim: rgba(241, 241, 241, 0.5);
-  --iplex-logo-shine: rgba(241, 241, 241, 0.3);
+  --iplex-logo-color: #FFFFFF;
   --iplex-logo-sheen: rgba(241, 241, 241, 0.14);
   --iplex-logo-sheen-end: rgba(241, 241, 241, 0);
   --iplex-logo-shade: rgba(0, 0, 0, 0.28);
-  --iplex-logo-outline: #000000;
-  --iplex-logo-drop: rgba(0, 0, 0, 0.85);
   /* ---- fim do logo ------------------------------------------------- */
 
   /* Área segura e transições */

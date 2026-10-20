@@ -13,9 +13,13 @@
  * certificado → destino (iPlex Web) → TypeScript → build/empacotamento WGT →
  * identificador → instalação (só se mudou) → abertura → validação real na TV.
  *
- * Ambientes: development (padrão) instala o shell apontando para a página de
- * teste controlada servida por este Mac; production usa a URL de
- * .env.production e só prossegue se o iPlex Web estiver publicado.
+ * Ambientes (padrão em IPLEX_TV_ENV no .env, hoje production):
+ *  - production: compila e instala sempre a última versão do app de produção
+ *    (URL de .env.production). Sem o iPlex Web publicado, só prossegue com
+ *    --allow-unpublished ou IPLEX_TV_ALLOW_UNPUBLISHED=true (mostra "iPlex
+ *    indisponível").
+ *  - development (--env development ou --page): shell apontando para a página
+ *    de teste controlada servida por este Mac.
  *
  * Configuração (sem pedir nada a cada execução): .env / .env.local
  *   IPLEX_TV_HOST, IPLEX_TV_SDB_PORT, IPLEX_TV_ENV, IPLEX_TV_CONNECT_ATTEMPTS,
@@ -47,7 +51,9 @@ function argValue(name) {
 }
 
 // .env (comum) decide o ambiente padrão; depois carrega .env.<ambiente>.
-const environment = argValue('--env') || loadEnv('common', root, '').IPLEX_TV_ENV || 'development'
+// --page (vitrine/página de teste servida pelo Mac) implica development.
+const environment =
+  argValue('--env') || (argValue('--page') ? 'development' : undefined) || loadEnv('common', root, '').IPLEX_TV_ENV || 'development'
 const env = loadEnv(environment, root, '')
 
 function positiveInt(value, fallback) {
@@ -65,7 +71,7 @@ const cfg = {
   validateTimeoutMs: positiveInt(env.IPLEX_TV_VALIDATE_TIMEOUT_MS, 60000),
   watchSeconds: positiveInt(argValue('--watch'), 0),
   forceInstall: process.argv.includes('--force-install'),
-  allowUnpublished: process.argv.includes('--allow-unpublished'),
+  allowUnpublished: process.argv.includes('--allow-unpublished') || env.IPLEX_TV_ALLOW_UNPUBLISHED === 'true',
   sdb: join(tizenHome, 'tools', 'sdb'),
   tizen: join(tizenHome, 'tools', 'ide', 'bin', 'tizen'),
   profile: env.IPLEX_TIZEN_SIGNING_PROFILE || 'iplex-tv',
@@ -499,7 +505,7 @@ async function main() {
       ok(`iPlex Web publicado em ${base.href} (versão ${manifest.version}, ponte v${manifest.bridgeVersion})`)
     } else {
       expectUnavailable = true
-      warn(`--allow-unpublished: o app será instalado e deve mostrar a tela "iPlex indisponível" (${base.href})`)
+      warn(`iPlex Web ainda não publicado (permitido por --allow-unpublished/IPLEX_TV_ALLOW_UNPUBLISHED): o app será instalado e deve mostrar a tela "iPlex indisponível" (${base.href})`)
     }
   } else if (cfg.target) {
     ok(`conteúdo empacotado no widget: ${cfg.target}`)

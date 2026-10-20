@@ -72,7 +72,7 @@ oficial ("Não foi possível conectar"): tudo centralizado, em 1920×1080.
 | Elemento | Hoje | Token / observação |
 |---|---|---|
 | Fundo | `#0F0F0F` liso, sem gradiente | `--iplex-bg` |
-| Marca | Logo em CSS: "iPlex" em Google Sans 700 com relevo neumórfico (aro claro, contorno escuro, sombra), letras com ~58 px | `IplexLogo`, `--iplex-logo-font-size` |
+| Marca | Logo em CSS: "iPlex" em Google Sans 700, branco `#FFFFFF`, sem relevo, com brilho vertical suave, letras com ~58 px | `IplexLogo`, `--iplex-logo-font-size` |
 | Título | Google Sans 64 px, peso 500, `#F1F1F1` (também nas telas de erro) | `--iplex-font-size-display`, `--iplex-text-primary` |
 | Mensagem | Google Sans 34 px, `#B7B7B7`, até 20em por linha | `--iplex-font-size-body`, `--iplex-text-secondary` |
 | Código | 26 px, `#B7B7B7` | Ajuda o suporte. Em desenvolvimento mostra o detalhe técnico |
@@ -245,8 +245,8 @@ estados precisam de layout lá:
 
 1. **Nome na TV:** hoje é "iPlex TV" (`IPLEX_TIZEN_APP_NAME`). Precisa ser
    igual ao título no Seller Office.
-2. **Logo:** resolvido nas telas. O logo em CSS (relevo neumórfico) aparece
-   no topo de T1–T8. O ícone da loja (`tizen/icon.png`) usa a arte
+2. **Logo:** resolvido nas telas. O logo em CSS (texto branco, sem relevo)
+   aparece no topo de T1–T8. O ícone da loja (`tizen/icon.png`) usa a arte
    original.
 3. **Saída nas telas de erro:** hoje o Return e o "Sair" encerram na hora.
    Quer pedir confirmação?
