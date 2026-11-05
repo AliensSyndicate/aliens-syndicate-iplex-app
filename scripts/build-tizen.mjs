@@ -89,6 +89,11 @@ if (remoteTarget?.protocol === 'http:') {
   navigationEntries.push(remoteTarget.hostname)
 }
 for (const host of (env.IPLEX_TIZEN_EXTRA_HOSTS || '').split(/\s+/).filter(Boolean)) allowDomain(baseDomain(host))
+// Trailers do iPlex Web: a mesma variável libera os hosts e anuncia `externalVideo` na ponte, para
+// o Web nunca carregar um vídeo que o pacote não libera (o Tizen tiraria o app da frente).
+if (env.IPLEX_TIZEN_EXTERNAL_VIDEO === 'true') {
+  for (const host of ['youtube-nocookie.com', 'youtube.com', 'googlevideo.com', 'ytimg.com']) allowDomain(host)
+}
 
 // Somente `npm run tv`: receptor de eventos de desenvolvimento no Mac.
 const devReportUrl = env.VITE_IPLEX_DEV_REPORT_URL

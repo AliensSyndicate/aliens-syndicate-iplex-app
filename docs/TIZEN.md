@@ -91,6 +91,11 @@ iframe.
 - O `config.xml` é gerado a partir do destino: `<access>` e
   `<tizen:allow-navigation>` liberam `iplex-2c8fc.web.app` e seus
   subdomínios. O Google não é mais dependência.
+- `IPLEX_TIZEN_EXTERNAL_VIDEO=true` (`.env.production`) libera também
+  `youtube-nocookie.com`, `youtube.com`, `googlevideo.com` e `ytimg.com`, e
+  anuncia `capabilities.externalVideo` na ponte. O iPlex Web só mostra os
+  trailers quando recebe essa capacidade. Sem o host liberado, o Tizen tira o
+  app da frente ao carregar o iframe do YouTube.
 
 ### Ponte e segurança
 

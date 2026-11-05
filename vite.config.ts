@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => {
   const plugins = [react(), babel({ presets: [reactCompilerPreset()] })]
   const define = {
     __IPLEX_APP_VERSION__: JSON.stringify(env.IPLEX_TIZEN_VERSION || '0.0.0'),
+    __IPLEX_EXTERNAL_VIDEO__: JSON.stringify(env.IPLEX_TIZEN_EXTERNAL_VIDEO === 'true'),
     __IPLEX_APP_NAME__: JSON.stringify(env.IPLEX_TIZEN_APP_NAME || 'iPlex TV'),
   }
 

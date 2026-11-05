@@ -9,6 +9,7 @@ type EventSink = <E extends BridgeEventName>(name: E, data: BridgeEvents[E]) => 
 interface ServicesOptions {
   platform: PlatformAdapter
   appVersion: string
+  externalVideo?: boolean
   /** Chamado no handshake app.ready do frontend. */
   onReady: (frontendVersion: string | undefined) => void
   /** Encaminha eventos ao frontend (BridgeHost.emit). */
@@ -19,7 +20,7 @@ interface ServicesOptions {
  * Implementação, no shell, dos métodos da ponte. Só expõe o que está no
  * contrato (src/bridge/protocol.ts); nada das APIs Tizen sai daqui diretamente.
  */
-export function createBridgeServices({ platform, appVersion, onReady, emit }: ServicesOptions) {
+export function createBridgeServices({ platform, appVersion, externalVideo = false, onReady, emit }: ServicesOptions) {
   let player: MediaPlayer | null = null
   let unsubscribePlayer: (() => void) | null = null
 
@@ -69,7 +70,7 @@ export function createBridgeServices({ platform, appVersion, onReady, emit }: Se
     installationId: getInstallationId(),
     device: { model: platform.model, screen: { width: window.screen.width, height: window.screen.height } },
     keys: { ...platform.keys },
-    capabilities: { nativePlayer: platform.nativePlayer, exit: platform.canExit, mediaKeys: platform.mediaKeys },
+    capabilities: { nativePlayer: platform.nativePlayer, exit: platform.canExit, mediaKeys: platform.mediaKeys, externalVideo },
   })
 
   const handlers: BridgeHandlers = {

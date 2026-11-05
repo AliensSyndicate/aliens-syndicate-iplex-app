@@ -23,4 +23,5 @@ interface ImportMeta {
 
 /** Versão e título do aplicativo (IPLEX_TIZEN_VERSION / IPLEX_TIZEN_APP_NAME), injetados pelo vite.config.ts. */
 declare const __IPLEX_APP_VERSION__: string
+declare const __IPLEX_EXTERNAL_VIDEO__: boolean
 declare const __IPLEX_APP_NAME__: string

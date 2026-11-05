@@ -32,6 +32,7 @@ export function ShellFrame({ url, allowedOrigins, targetOrigin, visible, onReady
     const services = createBridgeServices({
       platform: getPlatform(),
       appVersion: __IPLEX_APP_VERSION__,
+      externalVideo: __IPLEX_EXTERNAL_VIDEO__,
       onReady: (version) => notifyReady(version),
       emit: (name, data) => host?.emit(name, data),
     })
