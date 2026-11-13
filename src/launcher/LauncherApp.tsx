@@ -68,13 +68,18 @@ function describeFailure(failure: LaunchFailure): FailureText {
   }
 }
 
+/** Texto fixo das telas de carregamento (o mesmo do iPlex Web). */
+const LOADING_TITLE = 'Só um instante.'
+
 function statusFor(state: LauncherState): { title: string; message: string; busy: boolean; failure?: FailureText } {
   switch (state.phase) {
+    // Carregamento: a mesma composição da tela do iPlex Web (logo, "Só um instante." e a etapa embaixo),
+    // para o shell e o Web parecerem uma tela só.
     case 'checking':
-      return { title: 'Conectando ao iPlex…', message: 'Verificando a conexão e o serviço.', busy: true }
+      return { title: LOADING_TITLE, message: 'Verificando a conexão...', busy: true }
     case 'loading':
     case 'opening':
-      return { title: 'Carregando o iPlex…', message: 'Só um instante.', busy: true }
+      return { title: LOADING_TITLE, message: 'Carregando o iPlex...', busy: true }
     case 'running':
       return { title: '', message: '', busy: false }
     case 'returned':
@@ -145,7 +150,11 @@ export function LauncherApp() {
             <IplexText variant="display" className="launcher-title">
               {status.title}
             </IplexText>
-            <IplexText tone="secondary" className="launcher-message">
+            <IplexText
+              variant={status.busy ? 'caption' : 'body'}
+              tone="secondary"
+              className={status.busy ? 'launcher-message launcher-message--status' : 'launcher-message'}
+            >
               {status.message}
             </IplexText>
             {autoRetry && (

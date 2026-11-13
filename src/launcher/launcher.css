@@ -60,6 +60,11 @@
   word-break: break-word;
 }
 
+.launcher-message--status {
+  /* Etapa do carregamento: 26px, 16px abaixo do título (igual ao status do iPlex Web). */
+  margin-top: 16px;
+}
+
 .launcher-code {
   max-width: 36em;
   margin-top: 16px;

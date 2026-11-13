@@ -33,6 +33,16 @@ body {
   background: transparent;
 }
 
+/*
+ * AVPlay: o <object> só ancora o player; a área do vídeo vem do setDisplayRect (1920x1080).
+ * Em tela cheia, o Chromium da TV desenhava um quadrado translúcido (~40px) no centro, por cima
+ * do vídeo, em filmes, séries e canais. Com o objeto mínimo, o vídeo segue em tela cheia sem ele.
+ */
+object.iplex-media-surface {
+  width: 1px;
+  height: 1px;
+}
+
 /* Com mídia ativa, o fundo do shell some para o vídeo aparecer. */
 html.iplex-media-active body {
   background: transparent;
